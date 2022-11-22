@@ -1,0 +1,25 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cp4x-verify-integration
+  namespace: verify
+spec:
+  template:
+    spec:
+      serviceAccountName: cp4x-verify-sa
+      containers:
+      - name: configure-cp4x-verify
+        image: quay.io/langley_millard_ibm/cp4x-verify
+        command: ["./cp4x-verify.sh"]
+        volumeMounts:
+        - mountPath: /scratch
+          name: scratch
+        env:
+        - name: KUBECONFIG
+          value: "/tmp/config"
+        imagePullPolicy: Always
+      restartPolicy: OnFailure
+      volumes:
+      - name: scratch
+        emptyDir: {}
+  backoffLimit: 2

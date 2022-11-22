@@ -1,0 +1,38 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: ibm-integration-platform-navigator
+  namespace: cp4i
+spec:
+  channel: changeme
+  name: ibm-integration-platform-navigator
+  source: ibm-operator-catalog
+  sourceNamespace: openshift-marketplace
+
+---
+
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: ibm-mq
+  namespace: cp4i
+spec:
+  channel: changeme
+  name: ibm-mq
+  source: ibm-operator-catalog
+  sourceNamespace: openshift-marketplace
+
+---
+
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: ibm-appconnect
+  namespace: cp4i
+spec:
+  channel: changeme
+  name: ibm-appconnect
+  source: ibm-operator-catalog
+  sourceNamespace: openshift-marketplace
+
+## You can add the other subscriptions here too - eg App Connect

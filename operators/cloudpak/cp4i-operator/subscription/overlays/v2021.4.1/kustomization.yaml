@@ -1,0 +1,32 @@
+kind: Kustomization
+apiVersion: kustomize.config.k8s.io/v1beta1
+
+namespace: cp4i
+
+bases:
+  - ../../base
+
+patches:
+  # templatise images in catalog sources - v22.1
+  # catalog source
+  - target:
+      kind: Subscription
+      name: ibm-integration-platform-navigator
+    patch: |-
+      - op: replace
+        path: /spec/channel
+        value: 'v5.3'
+  - target:
+      kind: Subscription
+      name: ibm-appconnect
+    patch: |-
+      - op: replace
+        path: /spec/channel
+        value: 'v4.2'
+  - target:
+      kind: Subscription
+      name: ibm-mq
+    patch: |-
+      - op: replace
+        path: /spec/channel
+        value: 'v1.8'

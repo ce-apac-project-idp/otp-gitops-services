@@ -1,0 +1,45 @@
+---
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: ironic-http
+  namespace: metal-provisioner
+spec:
+#  host: ironic-http-metal-provisioner.rhacm-hub-fringe-sat-b95ece5a8e5f8f2343b2871be9bb6524-0000.au-syd.containers.appdomain.cloud
+  to:
+    kind: Service
+    name: ironic
+    weight: 100
+  port:
+    targetPort: httpd
+  wildcardPolicy: None
+---
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: ironic-api
+  namespace: metal-provisioner
+spec:
+#  host: ironic-api-metal-provisioner.rhacm-hub-fringe-sat-b95ece5a8e5f8f2343b2871be9bb6524-0000.au-syd.containers.appdomain.cloud
+  to:
+    kind: Service
+    name: ironic
+    weight: 100
+  port:
+    targetPort: api
+  wildcardPolicy: None
+---
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: ironic-inspector
+  namespace: metal-provisioner
+spec:
+#  host: ironic-inspector-metal-provisioner.rhacm-hub-fringe-sat-b95ece5a8e5f8f2343b2871be9bb6524-0000.au-syd.containers.appdomain.cloud
+  to:
+    kind: Service
+    name: ironic
+    weight: 100
+  port:
+    targetPort: inspector
+  wildcardPolicy: None

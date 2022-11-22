@@ -1,0 +1,25 @@
+kind: Kustomization
+apiVersion: kustomize.config.k8s.io/v1beta1
+
+namespace: cp4i
+
+bases:
+  - ../../base
+
+patches:
+  - target:
+      kind: PlatformNavigator
+      name: integration-platform-navigator
+    patch: |-
+      - op: replace
+        path: /spec/license/license
+        value: 'L-RJON-C7QG3S'
+      - op: replace
+        path: /spec/license/accept
+        value: true
+      - op: replace
+        path: /spec/storage/class
+        value: 'ibmc-file-gold-gid'
+      - op: replace
+        path: /spec/version
+        value: '2021.4.1'

@@ -1,0 +1,15 @@
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: baremetal-operator-ironic
+  namespace: metal-provisioner
+data:
+  DEPLOY_KERNEL_URL: 'http://ironic.metal-provisioner:6180/images/ironic-python-agent.kernel'
+  DEPLOY_RAMDISK_URL: 'http://ironic.metal-provisioner:6180/images/ironic-python-agent.initramfs'
+  DHCP_RANGE: '172.22.0.10,172.22.0.100' # that param doesn't matter
+  HTTP_PORT: '6180'
+  IRONIC_ENDPOINT: 'http://ironic.metal-provisioner:6385/v1/'
+  IRONIC_FAST_TRACK: 'true'
+  IRONIC_INSPECTOR_ENDPOINT: 'http://ironic.metal-provisioner:5050/v1/'
+  PROVISIONING_INTERFACE: eth0 # that param doesn't matter

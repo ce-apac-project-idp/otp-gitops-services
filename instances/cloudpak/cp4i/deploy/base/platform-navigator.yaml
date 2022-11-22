@@ -1,0 +1,16 @@
+apiVersion: integration.ibm.com/v1beta1
+kind: PlatformNavigator
+metadata:
+    name: integration-platform-navigator
+    namespace: cp4i
+spec:
+    license:
+        accept: changeme
+        license: changeme
+    requestIbmServices:
+        licensing: false
+    mqDashboard: true
+    replicas: 1
+    storage:
+        class: changeme
+    version: changme

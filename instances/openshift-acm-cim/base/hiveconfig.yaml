@@ -1,0 +1,13 @@
+apiVersion: hive.openshift.io/v1
+kind: HiveConfig
+metadata:
+  name: hive
+  labels:
+    backplaneconfig.name: multiclusterengine
+spec:
+  controllersConfig:
+    default:
+      replicas: 1
+  argoCDConfig:
+    enabled: true
+    namespace: openshift-gitops

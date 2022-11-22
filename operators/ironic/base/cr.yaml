@@ -1,0 +1,10 @@
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+ name: ironic-scc
+ namespace: metal-provisioner
+rules:
+ - apiGroups: ["security.openshift.io"]
+   resources: ["securitycontextconstraints"]
+   resourceNames: ["privileged"]
+   verbs: ["use"]
