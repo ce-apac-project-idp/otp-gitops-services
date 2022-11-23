@@ -1,0 +1,13 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  labels:
+    operators.coreos.com/universal-crossplane.upbound-system: ""
+  name: universal-crossplane
+  namespace: upbound-system
+spec:
+  channel: stable
+  installPlanApproval: Automatic
+  name: universal-crossplane
+  source: community-operators
+  sourceNamespace: openshift-marketplace
