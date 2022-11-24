@@ -3,4 +3,4 @@ kind: Provider
 metadata:
   name: provider-aws
 spec:
-  package: 'CHANGEME'
+  package: CHANGEME
