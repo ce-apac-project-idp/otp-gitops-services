@@ -9,7 +9,7 @@ bases:
 patches:
   - target:
       kind: Provider
-      name: provider-aws
+      name: aws-provider-config
     patch: |-
       - op: replace
         path: /spec/credentials/secretRef/key
