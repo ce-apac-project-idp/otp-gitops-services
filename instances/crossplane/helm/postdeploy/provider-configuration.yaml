@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: provider-configuration
+  namespace: crossplane-system
+spec:
+  template:
+    spec:
+      serviceAccountName: configure-provider-deployment-sa
+      containers:
+      - name: provider-configuration
+        image: quay.io/marwan_attar_ibm/provider-configuration
+        command: ["./configure-deployment.sh"]
+        env:
+        - name: KUBECONFIG
+          value: "/tmp/config"
+        imagePullPolicy: Always
+      restartPolicy: OnFailure
+  backoffLimit: 2
