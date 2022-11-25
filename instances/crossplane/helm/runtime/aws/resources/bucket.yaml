@@ -20,4 +20,4 @@ spec:
     versioningConfiguration:
       status: Enabled
   providerConfigRef:
-    name: provider-config
+    name: aws-provider-config
