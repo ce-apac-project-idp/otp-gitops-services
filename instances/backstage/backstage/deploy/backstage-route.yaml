@@ -1,0 +1,16 @@
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: backstage
+  namespace: backstage
+spec:
+  subdomain: backstage
+  to:
+    kind: Service
+    name: backstage
+    weight: 100
+  port:
+    targetPort: 7007
+  tls:
+    termination: edge
+  wildcardPolicy: None
