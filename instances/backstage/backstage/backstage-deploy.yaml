@@ -24,4 +24,4 @@ spec:
             - secretRef:
                 name: postgresql
             - secretRef:
-                name: backstage
+                name: backstage-secrets
