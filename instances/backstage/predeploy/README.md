@@ -19,7 +19,6 @@ For example,
 ```
 apiVersion: external-secrets.io/v1beta1
 kind: ExternalSecret
-...
 spec: 
   data:
   - secretKey: clientId
@@ -27,7 +26,7 @@ spec:
       key: abcd  <-- id for an arbitrary secret
   - secretKey: clientSecret
     remoteRef:
-      key: efgh <-- id for another arbitrary secret
+      key: efgh  <-- id for another arbitrary secret
   target:
     name: my-secrets
     template:
@@ -59,7 +58,6 @@ multiple secret keys from one external secret.
 ```
 apiVersion: external-secrets.io/v1beta1
 kind: ExternalSecret
-...
 spec: 
   dataFrom :
   - extract: 
@@ -75,7 +73,7 @@ On IBM Secrets Manager, you have
 
 Using `dataFrom` will automatically load all keys as it parses external secret as JSON object.
 
-> Note!  
+> NOTE!  
 > Using `key-value` type in IBM Secrets Manager would not work with ArgoCD
 
 ### Clarifying keys
@@ -86,8 +84,11 @@ you can write `spec.target.template` as below.
 template:
   type: Opaque
   data:
-    clientId: "{{ .clientId }}" <-- specify which key from which entry
+    clientId: "{{ .clientId }}"    <-- specify which key from which entry
     clientSecret: "{{ .clientSecret }}"
     echoString: "echo {{ .clientId }}" <-- make a new key
 ```
+
+> NOTE.  
+> `|-` is for multiline strings. If your data is simple one-line string, enclosing with double quotes would do the same. 
 
