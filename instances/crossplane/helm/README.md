@@ -48,6 +48,10 @@ This job can be found in the jobs repository [here](https://github.com/ce-apac-p
 
 TODO: Populate when operator based method of deployment works.
 
+## RBAC
+
+Irrespective of the installation method, the relevant serviceaccounts would need to be elevated to allow R/W permissons on crossplane resources. The "custom-argocd-cluster-argocd-application-controller" as created when Argo is provisioned needs to be extended as seen in the first few stanza entries under rules. Finally, the 2-services and 3-app yaml files would also need to have the relevant resources whitelisted.  
+
 ## Next steps - Helm
 
 For rapid iteration and testing purposes we did not pin down the restrictions (given by the ClusterRole objects) according to the principle of least privilege. The roles corresponding to the Provider deployment and the custom job are given in te following locations respectively:
