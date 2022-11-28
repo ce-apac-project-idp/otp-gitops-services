@@ -52,12 +52,14 @@ TODO: Populate when operator based method of deployment works.
 
 Irrespective of the installation method, the relevant serviceaccounts would need to be elevated to allow R/W permissons on crossplane resources. The "custom-argocd-cluster-argocd-application-controller" as created when Argo is provisioned needs to be extended as seen in the first few stanza entries under rules. Finally, the 2-services and 3-app yaml files would also need to have the relevant resources whitelisted.  
 
+In relation to XRD's and XR's, assume you've defined a new object called x found in api group a.b.c. The serviceaccount named "crossplane" in the crossplane-system namespace need to have CREATE,LIST,WATCH,GET,PATCH priveleges on said object. Better yet, creating a role allowing said access to the entire api group is probably a more efficient way of doing it.
 ## Next steps - Helm
 
 For rapid iteration and testing purposes we did not pin down the restrictions (given by the ClusterRole objects) according to the principle of least privilege. The roles corresponding to the Provider deployment and the custom job are given in te following locations respectively:
 
 1) [Provider Role](https://github.com/ce-apac-project-idp/otp-gitops-infra/blob/main/rbac/crossplane/providers/aws/clusterrole.yaml)
 2) [Job Role](https://github.com/ce-apac-project-idp/otp-gitops-infra/blob/main/rbac/crossplane/providers/aws/job/role.yaml)
+3) We need to make a role and rolebinding for the "crossplane" serviceaccount to allow R/W access to all the resources within the api group a.b.c assuming a.b.c is the api group housing the custom resources consumed as claims by the end user. Probably add this as an ArgoApp with the same sync wave as the job executed above, since the serviceaccount will not created until then.
 
 The provider role, no more and no less, should contain the following:
 
