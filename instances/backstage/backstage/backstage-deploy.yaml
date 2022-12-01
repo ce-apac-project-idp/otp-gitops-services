@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: backstage
-          image: image-registry.openshift-image-registry.svc:5000/backstage/backstage:1.0.0
+          image: image-registry.openshift-image-registry.svc:5000/backstage/backstage:1.0.1
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
@@ -24,4 +24,4 @@ spec:
             - secretRef:
                 name: postgresql-secrets
             - secretRef:
-                name: backstage-secrets
+                name: backstage-secrets-kube
