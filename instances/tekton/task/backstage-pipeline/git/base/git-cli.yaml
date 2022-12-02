@@ -11,7 +11,7 @@ metadata:
   namespace: tekton
   labels:
     app.kubernetes.io/version: '0.4'
-    referecne: "changeme"
+    reference: "changeme"
 spec:
   description: >-
     This task can be used to perform git operations. Git command that needs to
