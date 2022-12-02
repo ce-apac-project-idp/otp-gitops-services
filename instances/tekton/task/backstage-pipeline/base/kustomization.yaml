@@ -4,5 +4,5 @@ kind: Kustomization
 namespace: openshift-operators
 
 resources:
-  - git-cli.yaml
-  - git-clone.yaml
+  - https://github.com/tektoncd/catalog/blob/main/task/git-clone/0.5/git-clone.yaml
+  - https://github.com/tektoncd/catalog/blob/main/task/git-cli/0.4/git-cli.yaml
