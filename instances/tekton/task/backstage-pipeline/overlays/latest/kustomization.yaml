@@ -13,11 +13,11 @@ patches:
     patch: |-
       - op: replace
         path: /metadata/labels/reference
-        value: "github.com/tektoncd/catalog/blob/main/task/git-clone/0.5/git-clone.yaml"
+        value: "main-task-git-clone-0.5-git-clone.yaml"
   - target:
       kind: Task
       name: git-cli
     patch: |-
       - op: replace
         path: /metadata/labels/reference
-        value: "github.com/tektoncd/catalog/blob/main/task/git-cli/0.4/git-cli.yaml"
+        value: "main-task-git-cli-0.4-git-cli.yaml"
