@@ -1,0 +1,77 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: clone
+  labels:
+    build-name: changeme
+spec:
+  params:
+    - description: url of the git repo for the code of deployment
+      name: git-url
+      type: string
+    - default: main
+      description: revision to be used from repo of the code for deployment
+      name: git-revision
+      type: string
+    - default: marwan-is-the-best
+      description: The name of the application
+      name: applicationName
+      type: string
+    - default: marwan
+      description: Requestor name or identifier
+      name: targetEnv
+      type: string
+    - default: marwan
+      description: Requestor name or identifier
+      name: developerName
+      type: string
+  tasks:
+    - name: git-clone
+      params:
+        - name: url
+          value: $(params.git-url)
+        - name: subdirectory
+          value: ''
+        - name: deleteExisting
+          value: 'true'
+        - name: revision
+          value: $(params.git-revision)
+      taskRef:
+        kind: Task
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+        - name: ssh-directory
+          workspace: git-credentials
+    - name: gitops
+      params:
+        - name: GIT_SCRIPT
+          value: |
+            ls
+            pwd
+            git clone git@github.com:ce-apac-project-idp/otp-gitops-apps.git
+            cd otp-gitops-apps
+            mkdir -p idp/developers
+            cd idp/developers
+            mkdir -p end-user/end-user-app
+            cp /workspace/source/*.yaml end-user/end-user-app/
+            cd ../..
+            git add .
+            git config --global user.email "marwan@ibm.com"
+            git config --global user.name "marwan"
+            git commit -m "Adding desired YAMLs from upstream repo url"
+            git push
+      runAfter:
+        - git-clone
+      taskRef:
+        kind: Task
+        name: git-cli
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+        - name: ssh-directory
+          workspace: git-credentials
+  workspaces:
+    - name: shared-workspace
+    - name: git-credentials
