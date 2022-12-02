@@ -5,3 +5,19 @@ namespace: tekton
 
 bases:
   - ../../base
+
+patches:
+  - target:
+      kind: Task
+      name: git-clone
+    patch: |-
+      - op: replace
+        path: /metadata/labels/reference
+        value: "main-task-git-clone-0.5-git-clone.yaml"
+  - target:
+      kind: Task
+      name: git-cli
+    patch: |-
+      - op: replace
+        path: /metadata/labels/reference
+        value: "main-task-git-cli-0.4-git-cli.yaml"
