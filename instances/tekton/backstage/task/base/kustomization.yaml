@@ -5,4 +5,4 @@ resources:
   - git-cli.yaml
   - git-clone.yaml
   # - https://github.com/tektoncd/catalog/blob/main/task/git-clone/0.5/git-clone.yaml   (Does not work => Malformed URL)
-  # - https://github.com/tektoncd/catalog/blob/main/task/git-cli/0.4/git-cli.yaml
+  # - https://github.com/tektoncd/catalog/blob/main/task/git-cli/0.4/git-cli.yaml       (Same as above)
