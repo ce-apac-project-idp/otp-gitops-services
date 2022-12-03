@@ -1,0 +1,40 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerTemplate
+metadata:
+  name: backstage-cr-integration-tt
+  namespace: tekton
+spec:
+  params:
+    - name: applicationName
+    - name: targetEnv
+    - name: git-url
+    - name: developerName
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: backstage-pipeline-run-
+      spec:
+        params:
+          - name: applicationName
+            value: $(tt.params.applicationName)
+          - name: targetEnv
+            value: $(tt.params.targetEnv)
+          - name: git-url
+            value: $(tt.params.git-url)
+          - name: developerName
+            value: $(tt.params.developerName)
+        pipelineRef:
+          name: clone
+        workspaces:
+          - name: git-credentials
+            secret:
+              secretName: git-credentials
+          - name: shared-workspace
+            volumeClaimTemplate:
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: 500Mi

@@ -1,0 +1,15 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerBinding
+metadata:
+  name: backstage-cr-integration-binding
+  namespace: tekton
+spec:
+  params:
+    - name: applicationName
+      value: $(body.applicationName)
+    - name: targetEnv
+      value: $(body.targetEnv)
+    - name: developerName
+      value: $(body.developerName)
+    - name: git-url
+      value: $(body.repoURL)
