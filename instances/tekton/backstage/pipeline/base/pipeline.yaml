@@ -57,7 +57,7 @@ spec:
   - name: gitops
     runAfter: ["fetch-repo"]
     taskRef:
-      name: git-cli-inline
+      name: git-cli
     workspaces:
     - name: source
       workspace: shared-data
