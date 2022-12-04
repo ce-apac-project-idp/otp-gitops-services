@@ -198,6 +198,8 @@ spec:
         HTTPS_PROXY="${PARAM_HTTPS_PROXY}"
 
         test -z "${PARAM_NO_PROXY}" || export NO_PROXY="${PARAM_NO_PROXY}"
+        echo "URL"
+        echo "${PARAM_URL}"
 
         /ko-app/git-init \
           -url="${PARAM_URL}" \
