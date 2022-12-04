@@ -1,0 +1,19 @@
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: el-backstage-cr-el
+  namespace: tekton
+  labels:
+    app.kubernetes.io/managed-by: EventListener
+    app.kubernetes.io/part-of: Triggers
+    eventlistener: backstage-cr-el
+  annotations:
+    openshift.io/host.generated: 'true'
+spec:
+  to:
+    kind: Service
+    name: el-backstage-cr-el
+    weight: 100
+  port:
+    targetPort: http-listener
+  wildcardPolicy: None
