@@ -4,11 +4,6 @@ metadata:
   name: backstage-cr-integration-tt
   namespace: tekton
 spec:
-  params:
-    - name: applicationName
-    - name: targetEnv
-    - name: git-url
-    - name: developerName
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
@@ -17,35 +12,21 @@ spec:
       spec:
         params:
           - name: GIT_USER_EMAIL
-            value: "changeme"
+            value: "backstage-bot@ibm.com"
           - name: GIT_USER_NAME
-            value: "changeme"
+            value: "backstage-bot"
           - name: GIT_SCRIPT
             value: |
               echo "Not used"
           - name: branch-name
-            value: "changeme"
-          - name: APPLICATION_NAME
-            value: $(tt.params.applicationName)
+            value: main
           - name: GIT_TARGET_REPO
-            value: "changeme"
+            value: 'git@github.com:ce-apac-project-idp/otp-gitops-apps.git'
           - name: targetEnv
             value: $(tt.params.targetEnv)
           - name: repo-url
             value: $(tt.params.git-url)
           - name: REQUESTOR_ID
             value: $(tt.params.developerName)
-        pipelineRef:
-          name: clone
-        workspaces:
-          - name: git-credentials
-            secret:
-              secretName: git-credentials
-          - name: shared-workspace
-            volumeClaimTemplate:
-              spec:
-                accessModes:
-                  - ReadWriteOnce
-                resources:
-                  requests:
-                    storage: 500Mi
+          - name: APPLICATION_NAME
+            value: $(tt.params.applicationName)
