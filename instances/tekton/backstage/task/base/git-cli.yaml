@@ -24,12 +24,12 @@ spec:
         The base image for the task.
       name: BASE_IMAGE
       type: string
-    - default: ''
+    - default: 'backstage-bot'
       description: |
         Git user name for performing git operation.
       name: GIT_USER_NAME
       type: string
-    - default: ''
+    - default: 'backstage-bot@ibm.com'
       description: |
         Git user email for performing git operation.
       name: GIT_USER_EMAIL

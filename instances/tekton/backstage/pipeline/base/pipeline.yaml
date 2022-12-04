@@ -58,8 +58,8 @@ spec:
             cp /workspace/source/*.yaml end-user/end-user-app/
             cd ../..
             git add .
-            git config --global user.email "marwan@ibm.com"
-            git config --global user.name "marwan"
+            git config --global user.email $(params.GIT_USER_EMAIL)
+            git config --global user.name $(params.GIT_USER_NAME)
             git commit -m "Adding desired YAMLs from upstream repo url"
             git push
       runAfter:
