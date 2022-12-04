@@ -1,0 +1,40 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: idp-pipelinerun-
+spec:
+  params:
+    - name: REQUESTOR_ID
+      value: "DeveloperDave"
+    - name: APPLICATION_NAME
+      value: "dice-roller-application"
+    - name: GIT_TARGET_REPO
+      value: 'git@github.com:ce-apac-project-idp/otp-gitops-apps.git'
+    - name: repo-url
+      value: 'git@github.com:ce-apac-project-idp/developer-repo.git'
+    - name: branch-name
+      value: main
+    - name: GIT_USER_EMAIL
+      value: "backstage-bot@ibm.com"
+    - name: GIT_USER_NAME
+      value: "backstage-bot"
+    - name: GIT_SCRIPT
+      value: |
+        echo "Not used"
+  pipelineRef:
+    name: clone
+  serviceAccountName: pipeline
+  timeout: 1h0m0s
+  workspaces:
+    - name: shared-data
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+          - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
+    - name: ssh-credentials
+      secret:
+        secretName: git-credentials
+
