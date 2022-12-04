@@ -5,73 +5,89 @@ metadata:
   labels:
     build-name: changeme
 spec:
+  description: |
+    Git clone of the upstream repo followed by a Git push to the apps repo.
   params:
-    - description: url of the git repo for the code of deployment
-      name: git-url
-      type: string
-    - default: main
-      description: revision to be used from repo of the code for deployment
-      name: git-revision
-      type: string
-    - default: marwan-is-the-best
-      description: The name of the application
-      name: applicationName
-      type: string
-    - default: marwan
-      description: Requestor name or identifier
-      name: targetEnv
-      type: string
-    - default: marwan
-      description: Requestor name or identifier
-      name: developerName
-      type: string
-  tasks:
-    - name: git-clone
-      params:
-        - name: url
-          value: $(params.git-url)
-        - name: subdirectory
-          value: ''
-        - name: deleteExisting
-          value: 'true'
-        - name: revision
-          value: $(params.git-revision)
-      taskRef:
-        kind: Task
-        name: git-clone
-      workspaces:
-        - name: output
-          workspace: shared-workspace
-        - name: ssh-directory
-          workspace: git-credentials
-    - name: gitops
-      params:
-        - name: GIT_SCRIPT
-          value: |
-            ls
-            pwd
-            git clone git@github.com:ce-apac-project-idp/otp-gitops-apps.git
-            cd otp-gitops-apps
-            mkdir -p idp/developers
-            cd idp/developers
-            mkdir -p end-user/end-user-app
-            cp /workspace/source/*.yaml end-user/end-user-app/
-            cd ../..
-            git add .
-            git config --global user.email "marwan@ibm.com"
-            git config --global user.name "marwan"
-            git commit -m "Adding desired YAMLs from upstream repo url"
-            git push
-      runAfter:
-        - git-clone
-      taskRef:
-        kind: Task
-        name: git-cli
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-        - name: ssh-directory
-          workspace: git-credentials
+  - name: REQUESTOR_ID
+    type: string
+    description: Requestor who triggered a workflow from the backstage end.
+  - name: APPLICATION_NAME
+    type: string
+    description: The name of the application as requested by the requestor.
+  - name: GIT_SCRIPT
+    type: string
+    description: The script that git-cli needs to execute.
+  - name: GIT_USER_NAME
+    type: string
+    description: Git username performing the git commands.
+  - name: GIT_USER_EMAIL
+    type: string
+    description: Email corresponding to the username performing the commands.
+  - name: repo-url
+    type: string
+    description: The git repository URL to clone from.
+  - name: GIT_TARGET_REPO
+    type: string
+    description: Gitops application repository to push to.
+  - name: branch-name
+    type: string
+    description: The git branch to clone.
   workspaces:
-    - name: shared-workspace
-    - name: git-credentials
+  - name: shared-data
+    description: |
+      This workspace will receive the cloned git repo and be passed
+      to the next Task for the repo's yaml's file to GitOps.
+  - name: ssh-credentials
+    description: |
+      Key based authentication to pull/push from the repo.
+  tasks:
+  - name: fetch-repo
+    taskRef:
+      name: git-clone
+    workspaces:
+    - name: output
+      workspace: shared-data
+    - name: ssh-directory
+      workspace: ssh-credentials 
+    params:
+    - name: url
+      value: $(params.repo-url)
+    - name: revision
+      value: $(params.branch-name)
+  - name: gitops
+    runAfter: ["fetch-repo"]
+    taskRef:
+      name: git-cli-inline
+    workspaces:
+    - name: source
+      workspace: shared-data
+    - name: ssh-directory
+      workspace: ssh-credentials 
+    params:
+    - name: GIT_SCRIPT
+      value: $(params.GIT_SCRIPT)
+    - name: GIT_USER_NAME
+      value: $(params.GIT_USER_NAME)  
+    - name: GIT_USER_EMAIL
+      value: $(params.GIT_USER_EMAIL)
+    - name: GIT_TARGET_REPO
+      value: $(params.GIT_TARGET_REPO)
+    - name: APPLICATION_NAME
+      value: $(params.APPLICATION_NAME)
+    - name: REQUESTOR_ID
+      value: $(params.REQUESTOR_ID)
+    - name: SHA
+      value: $(tasks.fetch-repo.results.commit)
+  # - name: cat-readme
+  #   runAfter: ["fetch-repo"]  # Wait until the clone is done before reading the readme.
+  #   workspaces:
+  #   - name: source
+  #     workspace: shared-data
+  #   taskSpec:
+  #     workspaces:
+  #     - name: source
+  #     steps:
+  #     - image: zshusers/zsh:4.3.15
+  #       script: |
+  #         #!/usr/bin/env zsh
+  #         cat $(workspaces.source.path)/README.md

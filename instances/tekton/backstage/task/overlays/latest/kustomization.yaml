@@ -13,7 +13,7 @@ patches:
     patch: |-
       - op: replace
         path: /metadata/labels/reference
-        value: "main-task-git-clone-0.5-git-clone.yaml"
+        value: "main-task-git-clone-0.9-git-clone.yaml"
   - target:
       kind: Task
       name: git-cli
