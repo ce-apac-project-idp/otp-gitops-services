@@ -172,7 +172,8 @@ spec:
         mkdir -p idp/developers
         cd idp/developers
         mkdir -p $REQUESTOR_ID/$APPLICATION_NAME
-        arr=$(grep -Ril "compositionRef" /workspace/source/)
+        cp /workspace/source/*.yaml /tmp
+        arr=$(grep -Ril "compositionRef" /tmp/)
         if [ -z "$arr" ]
         then
           echo "No claims found. Proceeding as normal..."
@@ -201,7 +202,7 @@ spec:
           done
           echo "Claims are healthy. Deploying remaining components.."
           rm $arr
-          cp /workspace/source/*.yaml $REQUESTOR_ID/$APPLICATION_NAME
+          cp /tmp/*.yaml $REQUESTOR_ID/$APPLICATION_NAME
           git add .
           git commit -m "Hybrid Crossplane deployment. K8 push. Upstream commit hash: $SHA"
           git push
