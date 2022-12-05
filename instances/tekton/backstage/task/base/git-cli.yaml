@@ -198,7 +198,7 @@ spec:
             kind=$(cat $i | yq '.kind')
             namespace=$(cat $i | yq '.metadata.namespace')
             name=$(cat $i | yq '.metadata.name')
-            oc wait postgresql -n crossplane-system postgres-claim --for condition=Ready --timeout=1800s
+            oc wait $kind -n $namespace $name --for condition=Ready --timeout=1800s
           done
           echo "Claims are healthy. Deploying remaining components.."
           rm $arr
