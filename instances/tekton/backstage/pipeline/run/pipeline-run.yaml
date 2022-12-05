@@ -23,6 +23,9 @@ spec:
         echo "Not used"
   pipelineRef:
     name: clone
+  podTemplate:
+    securityContext:
+      fsGroup: 65532
   serviceAccountName: pipeline
   timeout: 1h0m0s
   workspaces:
