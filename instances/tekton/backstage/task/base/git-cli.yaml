@@ -172,11 +172,40 @@ spec:
         mkdir -p idp/developers
         cd idp/developers
         mkdir -p $REQUESTOR_ID/$APPLICATION_NAME
-        cp /workspace/source/*.yaml $REQUESTOR_ID/$APPLICATION_NAME
-        cd ../..
-        git add .
-        git commit -m "Upstream commit hash: $SHA"
-        git push
+        arr=$(grep -Ril "compositionRef" /workspace/source/)
+        if [ -z "$arr" ]
+        then
+          echo "No claims found. Proceeding as normal..."
+          cp /workspace/source/*.yaml $REQUESTOR_ID/$APPLICATION_NAME
+          cd ../..
+          git add .
+          git commit -m "Pure K8 Deployment: Upstream commit hash: $SHA"
+          git push
+        else
+          echo "Claims found. Proceeding accordingly"
+          cp $arr $REQUESTOR_ID/$APPLICATION_NAME
+          cd ../..
+          git add .
+          git commit -m "Hybrid Crossplane deployment. Claim push. Upstream commit hash: $SHA"
+          git push
+          # Argo should have kicked in at this stage otherwise fetching the resource (oc wait) might fail.
+          sleep 180
+          list=( $arr )
+          echo "Checking resource health..."
+          for i in "${list[@]}"
+          do
+            kind=$(cat $i | yq '.kind')
+            namespace=$(cat $i | yq '.metadata.namespace')
+            name=$(cat $i | yq '.metadata.name')
+            oc wait postgresql -n crossplane-system postgres-claim --for condition=Ready --timeout=1800s
+          done
+          echo "Claims are healthy. Deploying remaining components.."
+          rm $arr
+          cp /workspace/source/*.yaml $REQUESTOR_ID/$APPLICATION_NAME
+          git add .
+          git commit -m "Hybrid Crossplane deployment. K8 push. Upstream commit hash: $SHA"
+          git push
+        fi
 
         RESULT_SHA="$(git rev-parse HEAD | tr -d '\n')"
         EXIT_CODE="$?"
