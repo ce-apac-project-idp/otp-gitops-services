@@ -21,7 +21,7 @@ Git Cli links:
 
 ## Git Cli Task - Notes
 
-The main bulk of the task happens between (not including) the following lines respectively:
+The main bulk* of the task happens between (not including) the following lines respectively:
 
 ```
 git config --global user.name "$(params.GIT_USER_NAME)"
@@ -38,6 +38,8 @@ The logic is as such:
 3) The claims are pushed first to the apps repository, which triggers ArgoCD to create the necessary claim (which Crossplane uses to create the composite-resource). 
 4) A wait is performed to check for the health of the composite resource prior to pushing the remaining "consumer" resources (as these resources will consume the composite resource). 
 5) In the event claims are not present in the request, all yaml's (under the supposition ordering is not relevant here**) are pushed simultaneously in a "one shot" manner.
+
+* I have written this script very quickly. It is definitely not the best and can stand a refactor.
 
 ** Perhaps this can be extended to support "native" resource dependencies. For instance, assuming a request contained a.yaml, b.yaml and c.yaml with respective key value pairs "order:1", "order:2" and "order:3". The script can make use of this information to create the resources in the order desired, namely by mapping to argocd sync waves, for instance. (Perhaps there are ArgoAPI's allowing one to identify the current sync wave, for instance.)
 
