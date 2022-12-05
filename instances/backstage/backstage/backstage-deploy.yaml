@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: backstage
-          image: image-registry.openshift-image-registry.svc:5000/backstage/backstage:1.0.1
+          image: image-registry.openshift-image-registry.svc:5000/backstage/backstage:46a0f9311678fa764e62dda8d2425011bc481fb4
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
