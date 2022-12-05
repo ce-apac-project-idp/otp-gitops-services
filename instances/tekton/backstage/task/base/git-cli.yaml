@@ -202,7 +202,9 @@ spec:
           done
           echo "Claims are healthy. Deploying remaining components.."
           rm $arr
+          cd idp/developers
           cp /tmp/*.yaml $REQUESTOR_ID/$APPLICATION_NAME
+          cd ../..
           git add .
           git commit -m "Hybrid Crossplane deployment. K8 push. Upstream commit hash: $SHA"
           git push
