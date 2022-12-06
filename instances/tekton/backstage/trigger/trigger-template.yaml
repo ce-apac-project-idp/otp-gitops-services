@@ -17,18 +17,18 @@ spec:
       spec:
         params:
           - name: GIT_USER_EMAIL
-            value: "changeme"
+            value: "backstage-bot@ibm.com"
           - name: GIT_USER_NAME
-            value: "changeme"
+            value: "backstage-bot"
           - name: GIT_SCRIPT
             value: |
               echo "Not used"
           - name: branch-name
-            value: "changeme"
+            value: "main"
           - name: APPLICATION_NAME
             value: $(tt.params.applicationName)
           - name: GIT_TARGET_REPO
-            value: "changeme"
+            value: "git@github.com:ce-apac-project-idp/otp-gitops-apps.git"
           - name: targetEnv
             value: $(tt.params.targetEnv)
           - name: repo-url
