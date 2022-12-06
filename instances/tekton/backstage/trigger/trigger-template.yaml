@@ -15,12 +15,6 @@ spec:
       metadata:
         generateName: backstage-pipeline-run-
       spec:
-        pipelineRef:
-          name: clone
-        podTemplate:
-          securityContext:
-            fsGroup: 65532
-        serviceAccountName: pipeline
         params:
           - name: GIT_USER_EMAIL
             value: "backstage-bot@ibm.com"

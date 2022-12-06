@@ -10,6 +10,12 @@ spec:
       metadata:
         generateName: backstage-pipeline-run-
       spec:
+        pipelineRef:
+          name: clone
+        podTemplate:
+          securityContext:
+            fsGroup: 65532
+        serviceAccountName: pipeline
         params:
           - name: GIT_USER_EMAIL
             value: "backstage-bot@ibm.com"
@@ -30,3 +36,15 @@ spec:
             value: $(tt.params.developerName)
           - name: APPLICATION_NAME
             value: $(tt.params.applicationName)
+        workspaces:
+          - name: ssh-credentials
+            secret:
+              secretName: git-credentials
+          - name: shared-data
+            volumeClaimTemplate:
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: 500Mi
