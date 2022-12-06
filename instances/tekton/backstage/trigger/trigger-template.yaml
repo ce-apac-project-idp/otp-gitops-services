@@ -37,11 +37,15 @@ spec:
             value: $(tt.params.developerName)
         pipelineRef:
           name: clone
+        podTemplate:
+          securityContext:
+            fsGroup: 65532
+        serviceAccountName: pipeline
         workspaces:
-          - name: git-credentials
+          - name: ssh-credentials
             secret:
               secretName: git-credentials
-          - name: shared-workspace
+          - name: shared-data
             volumeClaimTemplate:
               spec:
                 accessModes:
