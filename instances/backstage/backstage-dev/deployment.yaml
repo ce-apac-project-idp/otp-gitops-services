@@ -39,7 +39,7 @@ spec:
             - secretRef:
                 name: backstage-secrets-kube
           image: >-
-            image-registry.openshift-image-registry.svc:5000/backstage-dev/backstage@sha256:d8360d8fe8aba3d796abb228dcfefeb8988b71bca974b64da28b3ad19f74ee6e
+            image-registry.openshift-image-registry.svc:5000/backstage-dev/backstage:latest
   strategy:
     type: RollingUpdate
     rollingUpdate:
