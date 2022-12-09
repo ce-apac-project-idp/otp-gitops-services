@@ -1,8 +1,10 @@
-apiVersion: apps/v1
 kind: Deployment
+apiVersion: apps/v1
 metadata:
   name: backstage
   namespace: backstage
+  labels:
+    app.kubernetes.io/instance: backstage
 spec:
   replicas: 1
   selector:
@@ -13,15 +15,27 @@ spec:
       labels:
         app: backstage
     spec:
+      volumes:
+        - name: app-config
+          configMap:
+            name: app-config
+            defaultMode: 420
       containers:
-        - name: backstage
-          image: image-registry.openshift-image-registry.svc:5000/backstage/backstage:46a0f9311678fa764e62dda8d2425011bc481fb4
-          imagePullPolicy: IfNotPresent
+        - resources: {}
+          terminationMessagePath: /dev/termination-log
+          name: backstage
           ports:
             - name: http
               containerPort: 7007
+              protocol: TCP
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: app-config
+              mountPath: /config/app-config.yaml
+              subPath: app-config.yaml
           envFrom:
             - secretRef:
                 name: postgresql-secrets
             - secretRef:
                 name: backstage-secrets-kube
+          image: image-registry.openshift-image-registry.svc:5000/backstage/backstage@sha256:94b8b4d1b81c5f9e02b578645aa4a525aae0b6be24c414ef9403cd0df983fb82

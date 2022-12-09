@@ -1,0 +1,179 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: app-config
+  namespace: backstage
+data:
+  app-config.yaml: >-
+    app:
+      title: IBM Internal Developer Platform
+      baseUrl: https://backstage-backstage.itzroks-666000qmn3-1jtmzt-6ccd7f378ae819553d37d5f2ee142bd6-0000.au-syd.containers.appdomain.cloud 
+
+    organization:
+      name: IBM
+
+    backend:
+      # Used for enabling authentication, secret is shared by all backend plugins
+      # See https://backstage.io/docs/tutorials/backend-to-backend-auth for
+      # information on the format
+
+      baseUrl: https://backstage-backstage.itzroks-666000qmn3-1jtmzt-6ccd7f378ae819553d37d5f2ee142bd6-0000.au-syd.containers.appdomain.cloud 
+      listen:
+        port: 7007
+        # Uncomment the following host directive to bind to specific interfaces
+        # host: 127.0.0.1
+      csp:
+        connect-src: ["'self'", 'http:', 'https:']
+        # Content-Security-Policy directives follow the Helmet format: https://helmetjs.github.io/#reference
+        # Default Helmet Content-Security-Policy values can be removed by setting the key to false
+      cors:
+        origin: https://backstage-backstage.itzroks-666000qmn3-1jtmzt-6ccd7f378ae819553d37d5f2ee142bd6-0000.au-syd.containers.appdomain.cloud 
+        methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
+        credentials: true
+      # This is for local development only, it is not recommended to use this in production
+      # The production database configuration is stored in app-config.production.yaml
+      database:
+        client: pg
+        connection:
+          host: ${POSTGRESQL_SERVICE_HOST}
+          port: ${POSTGRESQL_SERVICE_PORT}
+          user: ${POSTGRESQL_USER}
+          password: ${POSTGRESQL_PASSWORD}
+      cache:
+        store: memory
+      # workingDirectory: /tmp # Use this to configure a working directory for the scaffolder, defaults to the OS temp-dir
+
+    integrations:
+      github:
+        - host: github.com
+          # This is a Personal Access Token or PAT from GitHub. You can find out how to generate this token, and more information
+          # about setting up the GitHub integration here: https://backstage.io/docs/getting-started/configuration#setting-up-a-github-integration
+          token: ${GITHUB_TOKEN}
+        ### Example for how to add your GitHub Enterprise instance using the API:
+        # - host: ghe.example.net
+        #   apiBaseUrl: https://ghe.example.net/api/v3
+        #   token: ${GHE_TOKEN}
+
+    auth:
+      environment: development
+      session:
+        secret: devsessionsecret
+      providers:
+        github:
+          development:
+            clientId: Iv1.a86906fa3a97f414
+            clientSecret: 669a9c4d63a0aef070324d8343a2db08f276a8f7
+        ibm-verify-oidc-provider:
+          development:
+            metadataUrl: https://ryu.verify.ibm.com/oidc/endpoint/default/.well-known/openid-configuration
+            clientId: b594335f-1164-47b2-b5cf-599e95ab3955
+            clientSecret: 97jmLndjH0
+            prompt: auto
+
+    kubernetes:
+      customResources:
+        - group: 'apac.catalyst.project.idp'
+          apiVersion: 'v1alpha1'
+          plural: 'postgresql'
+        - group: 'route.openshift.io'
+          apiVersion: 'v1'
+          plural: 'routes'
+        - group: 'cluster.open-cluster-management.io'
+          apiVersion: 'v1'
+          plural: 'managedclusters'
+      serviceLocatorMethod:
+        type: 'multiTenant'
+      clusterLocatorMethods:
+        - type: 'config'
+          clusters:
+            - url: https://c100-e.au-syd.containers.cloud.ibm.com:31685
+              name: local-cluster
+              authProvider: 'serviceAccount'
+              skipTLSVerify: true
+              serviceAccountToken: ${KUBE_TOKEN}
+              dashboardUrl: https://console-openshift-console.itzroks-666000qmn3-1jtmzt-6ccd7f378ae819553d37d5f2ee142bd6-0000.au-syd.containers.appdomain.cloud 
+              dashboardApp: openshift
+
+    rhacm:
+      hub: 'local-cluster'
+
+    tekton:
+      - baseUrl: https://c100-e.au-syd.containers.cloud.ibm.com:31685
+        authorizationBearerToken: ${KUBE_TOKEN}
+        dashboardBaseUrl: https://tekton-dashboard-openshift-pipelines.itzroks-666000qmn3-1jtmzt-6ccd7f378ae819553d37d5f2ee142bd6-0000.au-syd.containers.appdomain.cloud 
+
+    proxy:
+      '/test':
+        target: 'https://example.com'
+        changeOrigin: true
+
+    # Reference documentation
+    http://backstage.io/docs/features/techdocs/configuration
+
+    # Note: After experimenting with basic setup, use CI/CD to generate docs
+
+    # and an external cloud storage when deploying TechDocs for production
+    use-case.
+
+    #https://backstage.io/docs/features/techdocs/how-to-guides#how-to-migrate-from-techdocs-basic-to-recommended-deployment-approach
+
+    techdocs:
+      builder: 'local' # Alternatives - 'external'
+      generator:
+        runIn: 'docker' # Alternatives - 'local'
+      publisher:
+        type: 'local' # Alternatives - 'googleGcs' or 'awsS3'. Read documentation for using alternatives.
+
+    scaffolder:
+      # see https://backstage.io/docs/features/software-templates/configuration for software template options
+
+    catalog:
+      import:
+        entityFilename: catalog-info.yaml
+        pullRequestBranchName: backstage-integration
+      rules:
+        - allow: [Component, System, API, Resource, Location]
+      locations:
+        # Local example data, file locations are relative to the backend process, typically `packages/backend`
+        - type: file
+          target: /opt/app-root/src/examples/entities.yaml
+
+        # Local example template
+        - type: file
+          target: /opt/app-root/src/examples/demo-app/template.yaml
+          rules:
+            - allow: [Template]
+
+        - type: file
+          target: /opt/app-root/src/examples/demo-crs/template.yaml
+          rules:
+            - allow: [Template]
+        - type: file
+          target: /opt/app-root/src/examples/template/template.yaml
+          rules:
+            - allow: [Template]       
+
+        # Local example organizational data
+        - type: file
+          target: /opt/app-root/src/examples/org.yaml
+          rules:
+            - allow: [User, Group]
+        
+        - type: file
+          target: /opt/app-root/src/examples/resources/test.yaml
+          rules:
+            - allow: [ Resource ]
+        - type: file
+          target: /opt/app-root/src/examples/resources/test-managed.yaml
+          rules:
+            - allow: [ Resource ]
+
+        ## Uncomment these lines to add more example data
+        # - type: url
+        #   target: https://github.com/backstage/backstage/blob/master/packages/catalog-model/examples/all.yaml
+
+        ## Uncomment these lines to add an example org
+        # - type: url
+        #   target: https://github.com/backstage/backstage/blob/master/packages/catalog-model/examples/acme-corp.yaml
+        #   rules:
+        #     - allow: [User, Group]
