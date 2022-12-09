@@ -57,17 +57,17 @@ data:
     auth:
       environment: development
       session:
-        secret: devsessionsecret
+        secret: ${AUTH_SESSION_SECRET}
       providers:
         github:
           development:
-            clientId: Iv1.a86906fa3a97f414
-            clientSecret: 669a9c4d63a0aef070324d8343a2db08f276a8f7
+            clientId: ${AUTH_GITHUB_CLIENT_ID}
+            clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}
         ibm-verify-oidc-provider:
           development:
-            metadataUrl: https://ryu.verify.ibm.com/oidc/endpoint/default/.well-known/openid-configuration
-            clientId: b594335f-1164-47b2-b5cf-599e95ab3955
-            clientSecret: 97jmLndjH0
+            metadataUrl: ${AUTH_IBM_VERIFY_META_URL}
+            clientId: ${AUTH_IBM_VERIFY_CLIENT_ID}
+            clientSecret: ${AUTH_IBM_VERIFY_CLIENT_SECRET}
             prompt: auto
 
     kubernetes:
