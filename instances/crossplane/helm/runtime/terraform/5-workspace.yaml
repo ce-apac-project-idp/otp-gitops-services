@@ -1,0 +1,17 @@
+apiVersion: tf.crossplane.io/v1alpha1
+kind: Workspace
+metadata:
+  name: tf-workspace-inline
+  annotations:
+spec:
+  forProvider:
+  providerConfigRef:
+    name: tf-aws-provider-config
+    source: Inline
+    module: |
+      resource "aws_s3_bucket" "s3" { 
+        bucket = "crossplane_s3_bucket_xyz123"
+      }
+  writeConnectionSecretToRef:
+    namespace: crossplane-system
+    name: tf-workspace-inline

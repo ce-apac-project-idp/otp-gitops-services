@@ -1,0 +1,15 @@
+apiVersion: cos.ibmcloud.crossplane.io/v1alpha1
+kind: Bucket
+metadata:
+  name: idp-crossplane-bucket-n7f543
+  annotations:
+    
+spec:
+  deletionPolicy: Delete
+  forProvider:
+    bucket: idp-crossplane-bucket-n7f543
+    ibmServiceInstanceIDRef: 
+        name: 'idp-crossplane-cos-instance-n7f543'
+    locationConstraint: 'us-standard'
+  providerConfigRef:
+    name: ibm-cloud

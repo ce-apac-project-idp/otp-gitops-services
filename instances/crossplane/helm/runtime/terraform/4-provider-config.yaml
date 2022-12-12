@@ -1,0 +1,25 @@
+---
+apiVersion: tf.crossplane.io/v1alpha1
+kind: ProviderConfig
+metadata:
+  name: tf-aws-provider-config
+spec:
+  credentials:
+  - filename: aws-creds.ini
+    source: Secret
+    secretRef:
+      namespace: crossplane-system
+      name: aws-creds
+      key: credentials
+  configuration: |
+      terraform {
+        backend "kubernetes" {
+          secret_suffix     = "providerconfig-tf-aws-provider-config"
+          namespace         = "crossplane-system"
+          in_cluster_config = true
+        }
+      }
+      provider "aws" {
+        shared_credentials_file = "aws-creds.ini"
+        region = "eu-west-1"
+      }

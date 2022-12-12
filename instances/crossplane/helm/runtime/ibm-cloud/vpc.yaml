@@ -1,0 +1,12 @@
+apiVersion: vpcv1.ibmcloud.crossplane.io/v1alpha1
+kind: VPC
+metadata:
+  name: idp-crossplane-vpc-01
+  namespace: crossplane-system
+spec:
+  deletionPolicy: Delete
+  forProvider:
+    classicAccess: false
+    name: idp-crossplane-vpc-01
+  providerConfigRef:
+    name: ibm-cloud

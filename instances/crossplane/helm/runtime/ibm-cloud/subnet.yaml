@@ -1,0 +1,19 @@
+apiVersion: vpcv1.ibmcloud.crossplane.io/v1alpha1
+kind: Subnet
+metadata:
+  name: idp-crossplane-vpc-01
+  namespace: crossplane-system
+  annotations:
+spec:
+  deletionPolicy: Delete
+  forProvider:
+    byTocalCount:
+      totalIpv4AddressCount: 8
+      name: idp-crossplane-subnet-01
+      zone: 
+        name: us-south-2
+      vpc: 
+        vpcRef: 
+          name: idp-crossplane-vpc-01
+  providerConfigRef:
+    name: ibm-cloud

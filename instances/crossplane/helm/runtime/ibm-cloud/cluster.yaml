@@ -1,0 +1,28 @@
+apiVersion: container.containerv2.ibmcloud.crossplane.io/v1alpha1
+kind: Cluster
+metadata:
+  name: idp-crossplane-made-1
+  namespace: crossplane-system
+spec:
+  deletionPolicy: Delete
+  forProvider:
+    name: idp-crossplane-made-1
+    disablePublicServiceEndpoint: true
+    provider: vpc-gen2
+    kubeVersion: 1.24.8
+    podSubnet: 172.17.0.0/18
+    serviceSubnet: 172.21.0.0/16
+    cosInstanceCRN: 'crn:v1:bluemix:public:cloud-object-storage:global:a/b741969115b44f27be0df63c97936a8f:c1ade0ce-e98c-4341-8497-95f83b847e89::'
+    defaultWorkerPoolEntitlement: ''
+    workerPool:
+      name: idp-worker-pool
+      entitlement: ''
+      flavor: cx2.2x4
+      vpcRef: 
+        name: idp-crossplane-vpc-01
+      workerCount: 3
+      zones:
+        - id: us-south-2
+          subnetID: 0727-230290b1-21c4-4296-b525-1756461646b2
+  providerConfigRef:
+    name: ibm-cloud
