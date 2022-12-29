@@ -9,6 +9,8 @@ spec:
       kind: PipelineRun
       metadata:
         generateName: backstage-pipeline-run-
+        annotations:
+          argocd.argoproj.io/compare-options: IgnoreExtraneous
       spec:
         pipelineRef:
           name: clone
@@ -25,17 +27,23 @@ spec:
             value: |
               echo "Not used"
           - name: branch-name
-            value: main
+            value: "main"
+          - name: APPLICATION_NAME
+            value: $(tt.params.applicationName)
           - name: GIT_TARGET_REPO
-            value: 'git@github.com:ce-apac-project-idp/otp-gitops-apps.git'
-          - name: targetEnv
-            value: $(tt.params.targetEnv)
+            value: "git@github.com:ce-apac-project-idp/otp-gitops-apps.git"
+          # - name: targetEnv
+          #   value: $(tt.params.targetEnv)
           - name: repo-url
             value: $(tt.params.git-url)
           - name: REQUESTOR_ID
             value: $(tt.params.developerName)
-          - name: APPLICATION_NAME
-            value: $(tt.params.applicationName)
+          - name: rox_central_endpoint
+            value: https://central-rhacs-operator.itzroks-666000qmn3-1jtmzt-6ccd7f378ae819553d37d5f2ee142bd6-0000.au-syd.containers.appdomain.cloud
+          - name: rox_api_token
+            value: eyJhbGciOiJSUzI1NiIsImtpZCI6Imp3dGswIiwidHlwIjoiSldUIn0.eyJhdWQiOlsiaHR0cHM6Ly9zdGFja3JveC5pby9qd3Qtc291cmNlcyNhcGktdG9rZW5zIl0sImV4cCI6MTcwMzg0OTM1MiwiaWF0IjoxNjcyMzEzMzUyLCJpc3MiOiJodHRwczovL3N0YWNrcm94LmlvL2p3dCIsImp0aSI6ImIxOThlOTc2LTJhYmMtNDhhNy05ODU5LWQ0NzRkMWM4ZTg0ZSIsIm5hbWUiOiJwZW5nbGktdGVzdGluZyIsInJvbGVzIjpbIkFkbWluIl19.Lu8YtWGskGHXVc4ail5jbNfhKmT0nNa4eFfu-R6MqT7G9qNb_2mmIIjbpXgSvH_lW2SlT7Gz8K4Vjrs4cuf_JttSdKrzQancE2A0CXb48W9iXDiAOf1n78uVyFox9bmahyAN5jewXD_eZq46C1TTZ2yGNeuFtXOz6vvRyYNlrhLb_HqSFuEc2lStBvpvjYU4zww2Klo_EJO9-uQlIojwIuKaeunAIhZ5RLdNgW86H387sCqrAojlWL8eGBXxPZZBgphA1EQE1hDNmyGwtIabG2LFzsQEFa1_2Rx8UWjcUJCIUGqUojAOufX6nZz-mcOm9j_acqMGuixuTccV7uodjCqy-3DMSx1t0bjyEe6enjeyMwbbxhSNqy_65Qo4v2i6Nnp9FwosuTkDXkUuSMu1xWKLEBJiwFGkBZ-Jnj-sBuvAtyw5PVSy-5k2KGNIVQZ1vro10SzMlbi4JQwGytMchPglzDwOmDO-GmOGYt4cwHp445kn74FOoLQXmv--iY2iOXA2x5GLKpEEBQt8d9dhlEl8GlkY9qNtUOUr-Os4I0oVHlQZgn92C09-14O9yNMz_d4QrogmuR04IiD1OGU7JDBTt515Zzca4ASrNAe4VlT4tnopFsp3D2VdbtWTvYnhuL1UQj58csRl2ILjf_L_sOTBbl3oxX4PefPu-XjWMhk
+          - name: deployment_file
+            value: k8-deploy.yaml
         workspaces:
           - name: ssh-credentials
             secret:
