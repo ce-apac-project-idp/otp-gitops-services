@@ -32,6 +32,15 @@ spec:
   - name: branch-name
     type: string
     description: The git branch to clone.
+  - name: rox_central_endpoint
+    type: string
+    description: The git branch to clone.
+  - name: rox_api_token
+    type: string
+    description: The git branch to clone.
+  - name: deployment_file
+    type: string
+    description: The git branch to clone.   
   workspaces:
   - name: shared-data
     description: |
@@ -54,6 +63,20 @@ spec:
       value: $(params.repo-url)
     - name: revision
       value: $(params.branch-name)
+  - name: deployment-check
+    runAfter: ["fetch-repo"]
+    taskRef:
+      name: rox-deployment-check
+    workspaces:
+    - name: workspace
+      workspace: shared-data 
+    params:
+    - name: rox_central_endpoint
+      value: $(params.rox_central_endpoint)
+    - name: rox_api_token
+      value: $(params.rox_api_token)
+    - name: file
+      value: $(params.deployment_file)
   - name: gitops
     runAfter: ["fetch-repo"]
     taskRef:
