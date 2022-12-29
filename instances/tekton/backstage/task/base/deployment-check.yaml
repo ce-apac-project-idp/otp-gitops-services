@@ -16,6 +16,7 @@ spec:
     - name: deployment_files_path
       type: string
       description: Path/Folder for the k8s deployment files to check
+      default: nothing
   results:
       - name: check_output
         description: Output of `roxctl deployment check`
