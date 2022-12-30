@@ -45,6 +45,11 @@ spec:
         set +x
         cd $REPO_PATH
         cat $(params.file)
-        curl -k -L -H "Authorization: Bearer $ROX_API_TOKEN" https://$ROX_CENTRAL_ENDPOINT/api/cli/download/roxctl-linux --output ./roxctl  > /dev/null; echo "Getting roxctl"
+        echo $ROX_CENTRAL_ENDPOINT
+        echo $ROX_API_TOKEN
+        curl -k -L -H "Authorization: Bearer $ROX_API_TOKEN" $ROX_CENTRAL_ENDPOINT/api/cli/download/roxctl-linux --output ./roxctl  > /dev/null; echo "Getting roxctl"
         chmod +x ./roxctl  > /dev/null
-        ./roxctl deployment check --insecure-skip-tls-verify -e $ROX_CENTRAL_ENDPOINT -f $(params.file)
+
+        endpoint=${ROX_CENTRAL_ENDPOINT}:443
+        echo $endpoint
+        ./roxctl deployment check --insecure-skip-tls-verify -e $endpoint -f $(params.file)
