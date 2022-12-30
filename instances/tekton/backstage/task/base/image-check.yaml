@@ -15,12 +15,20 @@ spec:
     - description: 'Full name of image to scan (example -- gcr.io/rox/sample:5.0-rc1)'
       name: image
       type: string
+      default: nothing
     - name: image_digest
       description:  Digest in sha256 hash format of the image to check
       type: string
+      default: nothing
+    - name: file
+      type: string
+      description: YAML file in the deployfiles workspace
   results:
     - description: Output of `roxctl image check`
       name: check_output
+  workspaces:
+    - description: The workspace consisting of maven project.
+      name: workspace
   steps:
     - env:
         - name: ROX_API_TOKEN
@@ -33,19 +41,25 @@ spec:
             secretKeyRef:
               key: rox_central_endpoint
               name: $(params.rox_central_endpoint)
+        - name: REPO_PATH
+          value: $(workspaces.workspace.path)
       image: registry.access.redhat.com/ubi8/ubi-minimal:latest
       name: rox-image-check
       resources: {}
-      script: >-
+      script: |
         #!/usr/bin/env bash
-
         set +x
 
-        curl -k -L -H "Authorization: Bearer $ROX_API_TOKEN"
-        https://$ROX_CENTRAL_ENDPOINT/api/cli/download/roxctl-linux --output
-        ./roxctl  > /dev/null; echo "Getting roxctl"
+        echo $REPO_PATH
+        cd $REPO_PATH
+        cat $(params.file)
 
+        image="$(grep -A0 'image:' $(params.file) | awk '{ print $2}')"
+        echo ${image}
+
+        curl -k -L -H "Authorization: Bearer $ROX_API_TOKEN" $ROX_CENTRAL_ENDPOINT/api/cli/download/roxctl-linux --output ./roxctl  > /dev/null; echo "Getting roxctl"
         chmod +x ./roxctl  > /dev/null
 
-        ./roxctl image check --insecure-skip-tls-verify -e $ROX_CENTRAL_ENDPOINT
-        --image $(params.image)@$(params.image_digest) 
+        endpoint=${ROX_CENTRAL_ENDPOINT}:443
+
+        ./roxctl image check --insecure-skip-tls-verify -e $endpoint --image ${image}

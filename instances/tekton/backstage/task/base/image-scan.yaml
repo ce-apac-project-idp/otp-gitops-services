@@ -13,6 +13,7 @@ spec:
     - name: image
       type: string
       description: Full name of image to scan (example -- gcr.io/rox/sample:5.0-rc1)
+      default: nothing
     - name: output_format
       type: string
       description:  Output format (json | csv | table)
@@ -20,6 +21,13 @@ spec:
     - name: image_digest
       description:  Digest in sha256 hash format of the image to scan
       type: string
+      default: nothing
+    - name: file
+      type: string
+      description: YAML file in the deployfiles workspace
+  workspaces:
+    - description: The workspace consisting of maven project.
+      name: workspace
   steps:
     - name: rox-image-scan
       image: registry.access.redhat.com/ubi8/ubi-minimal:latest
@@ -34,12 +42,17 @@ spec:
             secretKeyRef:
               name: $(params.rox_central_endpoint)
               key: rox_central_endpoint
+        - name: REPO_PATH
+          value: $(workspaces.workspace.path)
       script: |
         #!/usr/bin/env bash
         set +x
+        cd $REPO_PATH
+        image="$(grep -A0 'image:' $(params.file) | awk '{ print $2}')"
         export NO_COLOR="True"
-        curl -k -L -H "Authorization: Bearer $ROX_API_TOKEN" https://$ROX_CENTRAL_ENDPOINT/api/cli/download/roxctl-linux --output ./roxctl  > /dev/null; echo "Getting roxctl"
+        curl -k -L -H "Authorization: Bearer $ROX_API_TOKEN" $ROX_CENTRAL_ENDPOINT/api/cli/download/roxctl-linux --output ./roxctl  > /dev/null; echo "Getting roxctl"
         chmod +x ./roxctl > /dev/null
-        echo "## Scanning image $(params.image)@$(params.image_digest)"
-        ./roxctl image scan --insecure-skip-tls-verify -e $ROX_CENTRAL_ENDPOINT --image $(params.image)@$(params.image_digest) --output $(params.output_format)
-        echo "## Go to https://$ROX_CENTRAL_ENDPOINT/main/vulnerability-management/image/$(params.image_digest) to check more info"
+        endpoint=${ROX_CENTRAL_ENDPOINT}:443
+        echo "## Scanning image: ${image}"
+        ./roxctl image scan --insecure-skip-tls-verify -e ${endpoint} --image ${image} --output $(params.output_format)
+        echo "## Go to $ROX_CENTRAL_ENDPOINT/main/vulnerability-management/image/$(params.image_digest) to check more info"

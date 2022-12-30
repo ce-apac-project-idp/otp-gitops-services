@@ -77,6 +77,34 @@ spec:
       value: $(params.rox_api_token)
     - name: file
       value: $(params.deployment_file)
+  - name: image-check
+    runAfter: ["fetch-repo"]
+    taskRef:
+      name: rox-image-check
+    workspaces:
+    - name: workspace
+      workspace: shared-data 
+    params:
+    - name: rox_central_endpoint
+      value: $(params.rox_central_endpoint)
+    - name: rox_api_token
+      value: $(params.rox_api_token)
+    - name: file
+      value: $(params.deployment_file)
+  - name: image-scan
+    runAfter: ["fetch-repo"]
+    taskRef:
+      name: rox-image-scan
+    workspaces:
+    - name: workspace
+      workspace: shared-data 
+    params:
+    - name: rox_central_endpoint
+      value: $(params.rox_central_endpoint)
+    - name: rox_api_token
+      value: $(params.rox_api_token)
+    - name: file
+      value: $(params.deployment_file)
   - name: gitops
     runAfter: ["fetch-repo"]
     taskRef:
