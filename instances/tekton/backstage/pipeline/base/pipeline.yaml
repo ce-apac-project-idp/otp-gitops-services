@@ -106,7 +106,7 @@ spec:
     - name: file
       value: $(params.deployment_file)
   - name: gitops
-    runAfter: ["fetch-repo"]
+    runAfter: ["image-scan", "image-check", "deployment-check"]
     taskRef:
       name: git-cli
     workspaces:
