@@ -38,6 +38,4 @@ spec:
                 name: backstage-cm
             - secretRef:
                 name: postgresql-secrets
-            - secretRef:
-                name: backstage-secrets-kube
           image: image-registry.openshift-image-registry.svc:5000/openshift/nodejs:latest
