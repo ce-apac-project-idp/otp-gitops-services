@@ -49,10 +49,16 @@ spec:
         set +x
         cd $REPO_PATH
         image="$(grep -A0 'image:' $(params.file) | awk '{ print $2}')"
+
+        microdnf update && microdnf install -y tar gzip
+        curl -L -N https://github.com/google/go-containerregistry/releases/download/v0.7.0/go-containerregistry_Linux_x86_64.tar.gz | tar -zxf - crane gcrane
+        digest="$(./gcrane digest ${image})"
+        echo ${digest}
+
         export NO_COLOR="True"
         curl -k -L -H "Authorization: Bearer $ROX_API_TOKEN" $ROX_CENTRAL_ENDPOINT/api/cli/download/roxctl-linux --output ./roxctl  > /dev/null; echo "Getting roxctl"
         chmod +x ./roxctl > /dev/null
         endpoint=${ROX_CENTRAL_ENDPOINT}:443
-        echo "## Scanning image: ${image}"
-        ./roxctl image scan --insecure-skip-tls-verify -e ${endpoint} --image ${image} --output $(params.output_format)
-        echo "## Go to $ROX_CENTRAL_ENDPOINT/main/vulnerability-management/image/$(params.image_digest) to check more info"
+        echo "## Scanning image: ${image}@${digest}"
+        ./roxctl image scan --insecure-skip-tls-verify -e ${endpoint} --image ${image}@${digest} --output $(params.output_format)
+        echo "## Go to $ROX_CENTRAL_ENDPOINT/main/vulnerability-management/image/${digest} to check more info"
