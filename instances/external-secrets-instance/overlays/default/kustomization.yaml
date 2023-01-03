@@ -8,3 +8,4 @@ bases:
 
 resources:
   - cluster-secret-store.yaml
+  - sealed-secret.yaml
