@@ -21,9 +21,9 @@ spec:
             name: app-config
             defaultMode: 420
       containers:
-        - resources: {}
-          terminationMessagePath: /dev/termination-log
-          name: backstage
+        - name: backstage
+          command: [ "/bin/bash", "-c", "--" ]
+          args: [ "while true; do sleep 30; done;" ]
           ports:
             - name: http
               containerPort: 7007
@@ -31,11 +31,13 @@ spec:
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - name: app-config
-              mountPath: /config/app-config.yaml
+              mountPath: /otp/app-config.yaml
               subPath: app-config.yaml
           envFrom:
+            - configMapRef:
+                name: backstage-cm
             - secretRef:
                 name: postgresql-secrets
             - secretRef:
                 name: backstage-secrets-kube
-          image: image-registry.openshift-image-registry.svc:5000/backstage/backstage@sha256:94b8b4d1b81c5f9e02b578645aa4a525aae0b6be24c414ef9403cd0df983fb82
+          image: image-registry.openshift-image-registry.svc:5000/openshift/nodejs:latest

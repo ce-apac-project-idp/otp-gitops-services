@@ -7,31 +7,28 @@ data:
   app-config.yaml: >-
     app:
       title: IBM Internal Developer Platform
-      baseUrl: https://backstage-backstage.itzroks-666000qmn3-1jtmzt-6ccd7f378ae819553d37d5f2ee142bd6-0000.au-syd.containers.appdomain.cloud 
-
-    organization:
-      name: IBM
-
+      baseUrl: https://${BACKSTAGE_SUB_DOMAIN}.${OPENSHIFT_BASE_DOMAIN}
+    
     backend:
       # Used for enabling authentication, secret is shared by all backend plugins
-      # See https://backstage.io/docs/tutorials/backend-to-backend-auth for
-      # information on the format
-
-      baseUrl: https://backstage-backstage.itzroks-666000qmn3-1jtmzt-6ccd7f378ae819553d37d5f2ee142bd6-0000.au-syd.containers.appdomain.cloud 
+      # See https://backstage.io/docs/tutorials/backend-to-backend-auth for information on the format
+      # auth:
+      #   keys:
+      #     - secret: ${BACKEND_SECRET}
+      baseUrl: https://${BACKSTAGE_SUB_DOMAIN}.${OPENSHIFT_BASE_DOMAIN}
       listen:
         port: 7007
         # Uncomment the following host directive to bind to specific interfaces
         # host: 127.0.0.1
-      csp:
-        connect-src: ["'self'", 'http:', 'https:']
-        # Content-Security-Policy directives follow the Helmet format: https://helmetjs.github.io/#reference
-        # Default Helmet Content-Security-Policy values can be removed by setting the key to false
       cors:
-        origin: https://backstage-backstage.itzroks-666000qmn3-1jtmzt-6ccd7f378ae819553d37d5f2ee142bd6-0000.au-syd.containers.appdomain.cloud 
+        origin: https://${BACKSTAGE_SUB_DOMAIN}.${OPENSHIFT_BASE_DOMAIN}
         methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
         credentials: true
-      # This is for local development only, it is not recommended to use this in production
-      # The production database configuration is stored in app-config.production.yaml
+      # Content-Security-Policy directives follow the Helmet format
+      # See https://helmetjs.github.io/#reference
+      # Default Helmet Content-Security-Policy values can be removed by setting the key to false
+      csp:
+        connect-src: ["'self'", 'http:', 'https:']
       database:
         client: pg
         connection:
@@ -41,19 +38,33 @@ data:
           password: ${POSTGRESQL_PASSWORD}
       cache:
         store: memory
-      # workingDirectory: /tmp # Use this to configure a working directory for the scaffolder, defaults to the OS temp-dir
-
+      # Use this to configure a working directory for the scaffolder, defaults to the OS temp-dir
+      # workingDirectory: /tmp
+    
+    # See official README.md in the proxy-backend plugin for information on the configuration format
+    proxy:
+      '/test':
+        target: 'https://example.com'
+        changeOrigin: true
+    
+    organization:
+      name: IBM
+    
     integrations:
       github:
         - host: github.com
           # This is a Personal Access Token or PAT from GitHub. You can find out how to generate this token, and more information
           # about setting up the GitHub integration here: https://backstage.io/docs/getting-started/configuration#setting-up-a-github-integration
           token: ${GITHUB_TOKEN}
-        ### Example for how to add your GitHub Enterprise instance using the API:
-        # - host: ghe.example.net
-        #   apiBaseUrl: https://ghe.example.net/api/v3
-        #   token: ${GHE_TOKEN}
-
+      ### Example for how to add your GitHub Enterprise instance using the API:
+      # - host: ghe.example.net
+      #   apiBaseUrl: https://ghe.example.net/api/v3
+      #   token: ${GHE_TOKEN}
+      ### Example for how to add your GitHub Enterprise instance using raw HTTP fetches (token is optional):
+      # - host: ghe.example.net
+      #   rawBaseUrl: https://ghe.example.net/raw
+      #   token: ${GHE_TOKEN}
+    
     auth:
       environment: development
       session:
@@ -68,9 +79,43 @@ data:
             metadataUrl: ${AUTH_IBM_VERIFY_META_URL}
             clientId: ${AUTH_IBM_VERIFY_CLIENT_ID}
             clientSecret: ${AUTH_IBM_VERIFY_CLIENT_SECRET}
-            prompt: auto
-
+            prompt: auto # allowed values: auto, none, consent, login
+    
+    # Reference documentation http://backstage.io/docs/features/techdocs/configuration
+    # Note: After experimenting with basic setup, use CI/CD to generate docs
+    # and an external cloud storage when deploying TechDocs for production use-case.
+    # https://backstage.io/docs/features/techdocs/how-to-guides#how-to-migrate-from-techdocs-basic-to-recommended-deployment-approach
+    techdocs:
+      builder: 'local' # Alternatives - 'external'
+      generator:
+        runIn: 'docker'
+        # dockerImage: my-org/techdocs # use a custom docker image
+        # pullImage: true # or false to disable automatic pulling of image (e.g. if custom docker login is required)
+      publisher:
+        type: 'local' # Alternatives - 'googleGcs' or 'awsS3' or 'azureBlobStorage' or 'openStackSwift'. Read documentation for using alternatives.
+    
+    scaffolder:
+    # Reference documentation https://backstage.io/docs/features/software-templates/configuration
+    # Use to customize default commit author info used when new components are created
+    # defaultAuthor:
+    #   name: Scaffolder
+    #   email: scaffolder@backstage.io
+    # Use to customize the default commit message when new components are created
+    # defaultCommitMessage: 'Initial commit'
+    
     kubernetes:
+      serviceLocatorMethod:
+        type: 'multiTenant'
+      clusterLocatorMethods:
+        - type: 'config'
+          clusters:
+            - url: ${KUBE_API_ENDPOINT}
+              name: ${KUBE_CLUSTER_NAME}
+              authProvider: 'serviceAccount'
+              skipTLSVerify: true
+              serviceAccountToken: ${KUBE_SERVICE_ACCOUNT_TOKEN}
+              dashboardUrl: https://console-openshift-console.${OPENSHIFT_BASE_DOMAIN}
+              dashboardApp: openshift
       customResources:
         - group: 'apac.catalyst.project.idp'
           apiVersion: 'v1alpha1'
@@ -81,99 +126,39 @@ data:
         - group: 'cluster.open-cluster-management.io'
           apiVersion: 'v1'
           plural: 'managedclusters'
-      serviceLocatorMethod:
-        type: 'multiTenant'
-      clusterLocatorMethods:
-        - type: 'config'
-          clusters:
-            - url: https://c100-e.au-syd.containers.cloud.ibm.com:31685
-              name: local-cluster
-              authProvider: 'serviceAccount'
-              skipTLSVerify: true
-              serviceAccountToken: ${KUBE_TOKEN}
-              dashboardUrl: https://console-openshift-console.itzroks-666000qmn3-1jtmzt-6ccd7f378ae819553d37d5f2ee142bd6-0000.au-syd.containers.appdomain.cloud 
-              dashboardApp: openshift
-
+    
     rhacm:
-      hub: 'local-cluster'
-
+      hub: ${RHACM_HUB_CLUSTER}
+    
     tekton:
-      - baseUrl: https://c100-e.au-syd.containers.cloud.ibm.com:31685
-        authorizationBearerToken: ${KUBE_TOKEN}
-        dashboardBaseUrl: https://tekton-dashboard-openshift-pipelines.itzroks-666000qmn3-1jtmzt-6ccd7f378ae819553d37d5f2ee142bd6-0000.au-syd.containers.appdomain.cloud 
-
-    proxy:
-      '/test':
-        target: 'https://example.com'
-        changeOrigin: true
-
-    # Reference documentation
-    http://backstage.io/docs/features/techdocs/configuration
-
-    # Note: After experimenting with basic setup, use CI/CD to generate docs
-
-    # and an external cloud storage when deploying TechDocs for production
-    use-case.
-
-    #https://backstage.io/docs/features/techdocs/how-to-guides#how-to-migrate-from-techdocs-basic-to-recommended-deployment-approach
-
-    techdocs:
-      builder: 'local' # Alternatives - 'external'
-      generator:
-        runIn: 'docker' # Alternatives - 'local'
-      publisher:
-        type: 'local' # Alternatives - 'googleGcs' or 'awsS3'. Read documentation for using alternatives.
-
-    scaffolder:
-      # see https://backstage.io/docs/features/software-templates/configuration for software template options
-
+      - baseUrl: ${KUBE_API_ENDPOINT}
+        authorizationBearerToken: ${KUBE_SERVICE_ACCOUNT_TOKEN}
+        dashboardBaseUrl: https://tekton-dashboard-openshift-pipelines.${OPENSHIFT_BASE_DOMAIN}
+    
     catalog:
       import:
         entityFilename: catalog-info.yaml
         pullRequestBranchName: backstage-integration
       rules:
-        - allow: [Component, System, API, Resource, Location]
+        - allow:
+            - API
+            - Component
+            - Domain
+            - Location
+            - Resource
+            - System
       locations:
-        # Local example data, file locations are relative to the backend process, typically `packages/backend`
-        - type: file
-          target: /opt/app-root/src/examples/entities.yaml
-
-        # Local example template
-        - type: file
-          target: /opt/app-root/src/examples/demo-app/template.yaml
+        # Add a location here to ingest it, for example from a URL:
+        #     - type: url
+        #       target: https://github.com/backstage/backstage/blob/master/packages/catalog-model/examples/all.yaml
+        #
+        # For local development you can use a file location instead:
+        #     - type: file
+        #       target: ../catalog-model/examples/all-components.yaml
+        #
+        # File locations are relative to the current working directory of the
+        # backend, for example packages/backend/.
+        - type: url
+          target: https://github.com/ce-apac-project-idp/developer-repo-catalog/blob/main/all.yaml
           rules:
-            - allow: [Template]
-
-        - type: file
-          target: /opt/app-root/src/examples/demo-crs/template.yaml
-          rules:
-            - allow: [Template]
-        - type: file
-          target: /opt/app-root/src/examples/template/template.yaml
-          rules:
-            - allow: [Template]       
-
-        # Local example organizational data
-        - type: file
-          target: /opt/app-root/src/examples/org.yaml
-          rules:
-            - allow: [User, Group]
-        
-        - type: file
-          target: /opt/app-root/src/examples/resources/test.yaml
-          rules:
-            - allow: [ Resource ]
-        - type: file
-          target: /opt/app-root/src/examples/resources/test-managed.yaml
-          rules:
-            - allow: [ Resource ]
-
-        ## Uncomment these lines to add more example data
-        # - type: url
-        #   target: https://github.com/backstage/backstage/blob/master/packages/catalog-model/examples/all.yaml
-
-        ## Uncomment these lines to add an example org
-        # - type: url
-        #   target: https://github.com/backstage/backstage/blob/master/packages/catalog-model/examples/acme-corp.yaml
-        #   rules:
-        #     - allow: [User, Group]
+            - allow: [Group, Template, User]
