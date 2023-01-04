@@ -1,7 +1,7 @@
 apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerTemplate
 metadata:
-  name: backstage-cr-integration-tt
+  name: backstage-cr-tt
   namespace: tekton
 spec:
   resourcetemplates:
