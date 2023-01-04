@@ -12,7 +12,7 @@ metadata:
 spec:
   to:
     kind: Service
-    name: el-backstage-cr-el
+    name: el-backstage-cr
     weight: 100
   port:
     targetPort: http-listener
