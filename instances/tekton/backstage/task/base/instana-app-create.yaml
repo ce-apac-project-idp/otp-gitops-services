@@ -1,0 +1,126 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: create-instana-app
+spec:
+  params:
+    - name: instana_server
+      type: string
+      description: Instana server url (example - https://ibmdevsandbox-instanaibm.instana.io)
+      default: https://ibmdevsandbox-instanaibm.instana.io
+    - name: instana_endpoint
+      type: string
+      description: Instana API endpoint (example - api/application-monitoring/settings/application)
+      default: api/application-monitoring/settings/application
+    - name: instana_api_token
+      type: string
+      description: Secret containing the StackRox API token with CI permissions
+      default: OpTESfGcRsWwO_2fm2q5WA
+    - name: instana_app_name
+      type: string
+      description: the name of instana application perspective 
+      default: idp-app
+    - name: instana_ocp_clustername
+      type: string
+      description: The OCP cluster name in instana
+      default: hub-ocp
+    - name: instana_app_filter_name
+      type: string
+      description: The filter name to filter the resource you want to monitor(example kubernetes.label,kubernetes.namespace)
+      default: kubernetes.label
+    - name: instana_app_filter_key
+      type: string
+      description: The key of lable in OCP resources (example app in label "app=gateway")
+      default: null
+    - name: instana_app_filter_value
+      type: string
+      description: The key of lable in OCP resources (example gateway in label "app=gateway")
+      default: "*"
+  results:
+      - name: instana_app_id
+        description: the id of instana application perspective.
+  workspaces:
+    - description: The workspace consisting of maven project.
+      name: workspace
+  steps:
+    - name: create-instana-app
+      image: registry.access.redhat.com/ubi8/ubi-minimal:latest
+      workingDir: $(workspaces.workspace.path)
+      env:
+      - name: PARAM_INSTANA_SERVER
+        value: $(params.instana_server)
+      - name: PARAM_INSTANA_ENDPOINT
+        value: $(params.instana_endpoint)
+      - name: PARAM_INSTANA_API_TOKEN
+        value: $(params.instana_api_token)
+      - name: PARAM_INSTANA_APP_NAME
+        value: $(params.instana_app_name)
+      - name: PARAM_INSTANA_OCP_CLUSTERNAME
+        value: $(params.instana_ocp_clustername)
+      - name: PARAM_INSTANA_APP_FILTER_NAME
+        value: $(params.instana_app_filter_name)
+      - name: PARAM_INSTANA_APP_FILTER_KEY
+        value: $(params.instana_app_filter_key)
+      - name: PARAM_INSTANA_APP_FILTER_VALUE
+        value: $(params.instana_app_filter_value)
+
+      script: |
+        #!/usr/bin/env bash
+        set +x
+        curl -sL https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -o ./jq
+        chmod +x ./jq
+        echo "Instana server:  " $PARAM_INSTANA_SERVER
+        echo "Instana api token: "$PARAM_INSTANA_API_TOKEN
+        echo "Creating Instana application perspective"
+        cat >>./create_instana_app.sh <<EOF
+        curl -s -w '%{http_code}' -o ./create_result.json -X POST '$PARAM_INSTANA_SERVER/$PARAM_INSTANA_ENDPOINT' -H 'authorization: apiToken $PARAM_INSTANA_API_TOKEN' -H 'Content-Type: application/json' --data-raw '{ 
+          "label": "$PARAM_INSTANA_APP_NAME",
+          "matchSpecification": null,
+          "tagFilterExpression": {
+              "type": "EXPRESSION",
+              "logicalOperator": "AND",
+              "elements": [
+                  {
+                      "type": "TAG_FILTER",
+                      "name": "kubernetes.cluster.name",
+                      "value": "$PARAM_INSTANA_OCP_CLUSTERNAME",
+                      "operator": "EQUALS",
+                      "entity": "DESTINATION"
+                  },
+                  {
+                      "type": "TAG_FILTER",
+                      "name": "$PARAM_INSTANA_APP_FILTER_NAME",
+                      "key": "$PARAM_INSTANA_APP_FILTER_KEY",
+                      "value": "$PARAM_INSTANA_APP_FILTER_VALUE",
+                      "operator": "EQUALS",
+                      "entity": "DESTINATION"
+                  }
+              ]
+          },
+          "scope": "INCLUDE_ALL_DOWNSTREAM",
+          "boundaryScope": "ALL",
+          "accessRules": [
+              {
+                  "accessType": "READ_WRITE",
+                  "relationType": "GLOBAL",
+                  "relatedId": null
+              }
+          ]
+        }' 
+        EOF
+
+        status_code=`sh -x ./create_instana_app.sh`
+        echo "status_code:  " $status_code 
+        if [[ $status_code == 200 ]]; then
+          echo "Instana APP Created Success."
+          echo -n "Instana app id: "
+          cat create_result.json  | ./jq -r .id | tee $(results.instana_app_id.path) 
+
+        elif [[ $status_code == 400 ]]; then
+          echo "Instana APP has existed."
+          exit 1
+
+        else
+          echo "Instana APP Created failed."
+          exit 1
+        fi
