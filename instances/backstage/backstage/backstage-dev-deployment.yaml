@@ -25,7 +25,7 @@ spec:
             name: backstage-config
         - secretRef:
             name: postgresql-secrets
-        image: image-registry.openshift-image-registry.svc:5000/backstage-dev/backstage@sha256:d1052e6e40ea28fdcf4f736046be1af074dfb4a6524bbc5a267391d9004d3344
+        image: image-registry.openshift-image-registry.svc:5000/backstage-dev/backstage@sha256:1818693b641bf6709abad47bafd560542c29b3606f3135fcc10e2305cee221bd
         imagePullPolicy: Always
         name: backstage
         ports:
