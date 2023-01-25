@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: backstage
+  name: backstage
+  namespace: backstage-dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backstage
+  template:
+    metadata:
+      labels:
+        app: backstage
+    spec:
+      containers:
+      - command:
+        - /bin/sh
+        - -c
+        - NODE_TLS_REJECT_UNAUTHORIZED=0 node packages/backend --config app-config.yaml
+        envFrom:
+        - configMapRef:
+            name: backstage-config
+        - secretRef:
+            name: postgresql-secrets
+        image: image-registry.openshift-image-registry.svc:5000/backstage-dev/backstage@sha256:d1052e6e40ea28fdcf4f736046be1af074dfb4a6524bbc5a267391d9004d3344
+        imagePullPolicy: Always
+        name: backstage
+        ports:
+        - containerPort: 7007
+          name: http
+          protocol: TCP
