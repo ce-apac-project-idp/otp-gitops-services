@@ -1,0 +1,34 @@
+kind: BuildConfig
+apiVersion: build.openshift.io/v1
+metadata:
+  name: alakhir-alakhir
+  namespace: backstage
+  labels:
+    app: alakhir-alakhir
+    developer: alakhir
+    purpose: final
+spec:
+  nodeSelector: null
+  output:
+    to:
+      kind: DockerImage
+      name: 'quay.io/idp_org/alakhir-alakhir:final'
+    pushSecret:
+      name: global-pull-secret
+  resources: {}
+  successfulBuildsHistoryLimit: 5
+  failedBuildsHistoryLimit: 5
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfile
+  postCommit: {}
+  source:
+    type: Git
+    git:
+      uri: 'git@github.com:ce-apac-project-idp/developer-repositories.git'
+    contextDir: demo-app-react
+    sourceSecret:
+      name: git-build-config
+  runPolicy: Serial
+

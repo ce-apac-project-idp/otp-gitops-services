@@ -1,0 +1,54 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerTemplate
+metadata:
+  name: devsecops-trigger-template 
+  namespace: backstage
+spec:
+  params:
+    - name: applicationName
+    - name: targetEnv
+    - name: gitUrl
+    - name: developerName
+    - name: purpose
+    - name: contextDir
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: devsecops-pipeline-run- 
+        annotations:
+          argocd.argoproj.io/compare-options: IgnoreExtraneous
+      spec:
+        params:
+          - name: app-name 
+            value: $(tt.params.applicationName)
+          - name: repo-url
+            value: $(tt.params.gitUrl)
+          - name: developer 
+            value: $(tt.params.developerName)
+          - name: context-dir
+            value: $(tt.params.contextDir)
+          - name: purpose
+            value: $(tt.params.purpose)
+        pipelineRef:
+          name: devsecops 
+        serviceAccountName: pipeline # Need to set defaults somehow 
+        workspaces:
+          - name: ssh-credentials
+            secret:
+              secretName: git-credentials
+          - name: shared-data
+            volumeClaimTemplate:
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: 500Mi
+                storageClassName: ocs-storagecluster-cephfs
+          - configMap:
+              name: registry-data
+            name: registry-configmap
+          - configMap:
+              name: git-data
+            name: git-configmap

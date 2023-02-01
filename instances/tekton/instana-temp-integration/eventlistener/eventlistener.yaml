@@ -1,0 +1,14 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: EventListener
+metadata:
+  name: devsecops-el
+  namespace: backstage
+spec:
+  serviceAccountName: pipeline
+  triggers:
+    - bindings:
+        - kind: TriggerBinding
+          ref: devsecops-trigger-binding 
+      name: devsecops-binding 
+      template:
+        ref: devsecops-trigger-template

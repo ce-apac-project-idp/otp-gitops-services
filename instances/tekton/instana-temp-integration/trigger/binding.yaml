@@ -1,0 +1,17 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerBinding
+metadata:
+  name: devsecops-trigger-binding
+  namespace: backstage 
+spec:
+  params:
+    - name: applicationName
+      value: $(body.applicationName)
+    - name: targetEnv
+      value: $(body.targetEnv)
+    - name: developerName
+      value: $(body.developerName)
+    - name: gitUrl
+      value: $(body.repoURL)
+    - name: contextDir
+      value: $(body.contextDir)

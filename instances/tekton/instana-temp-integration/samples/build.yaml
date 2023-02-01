@@ -1,0 +1,57 @@
+kind: Build
+apiVersion: build.openshift.io/v1
+metadata:
+  annotations:
+    openshift.io/build-config.name: alakhir-alakhir
+    openshift.io/build.number: '2'
+    openshift.io/build.pod-name: alakhir-alakhir-2-build
+  name: alakhir-alakhir-2
+  namespace: backstage
+  ownerReferences:
+    - apiVersion: build.openshift.io/v1
+      kind: BuildConfig
+      name: alakhir-alakhir
+      uid: 9c283d01-8265-43b5-a3e2-f7223ba6cffc
+      controller: true
+  labels:
+    app: alakhir-alakhir
+    buildconfig: alakhir-alakhir
+    developer: alakhir
+    openshift.io/build-config.name: alakhir-alakhir
+    openshift.io/build.start-policy: Serial
+    purpose: final
+spec:
+  nodeSelector: null
+  output:
+    to:
+      kind: DockerImage
+      name: 'quay.io/idp_org/alakhir-alakhir:final'
+    pushSecret:
+      name: global-pull-secret
+  resources: {}
+  triggeredBy:
+    - message: Manually triggered
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfile
+  postCommit: {}
+  serviceAccount: builder
+  source:
+    type: Git
+    git:
+      uri: 'git@github.com:ce-apac-project-idp/developer-repositories.git'
+    contextDir: demo-app-react
+    sourceSecret:
+      name: git-build-config
+  revision:
+    type: Git
+    git:
+      commit: a4f21d9f8af34e1226f642245874abd11c23ddf0
+      author:
+        name: Mattar555
+        email: marwan.attar93@gmail.com
+      committer:
+        name: GitHub
+        email: noreply@github.com
+      message: Update Dockerfile

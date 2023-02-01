@@ -1,0 +1,49 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  annotations:
+    pipeline.openshift.io/started-by: 'IAM#marwan.attar@ibm.com'
+  name: devsecops-40q8sz
+  namespace: backstage
+  labels:
+    build-name: devsecops
+    tekton.dev/pipeline: devsecops
+spec:
+  params:
+    - name: app-name
+      value: asdf
+    - name: repo-url
+      value: 'git@github.com:ce-apac-project-idp/developer-repositories.git'
+    - name: purpose
+      value: asdf
+    - name: context-dir
+      value: demo-app-react
+    - name: developer
+      value: zxvf
+  pipelineRef:
+    name: devsecops
+  serviceAccountName: pipeline
+  timeout: 1h0m0s
+  workspaces:
+    - name: shared-data
+      volumeClaimTemplate:
+        metadata:
+          creationTimestamp: null
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
+          storageClassName: ibmc-vpc-block-10iops-tier
+          volumeMode: Filesystem
+        status: {}
+    - name: ssh-credentials
+      secret:
+        secretName: git-credentials
+    - configMap:
+        name: registry-data
+      name: registry-configmap
+    - configMap:
+        name: git-data
+      name: git-configmap
