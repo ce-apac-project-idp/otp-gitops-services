@@ -52,3 +52,9 @@ spec:
           - configMap:
               name: git-data
             name: git-configmap
+          - name: instana-credentials
+            secret:
+              secretName: instana-credentials
+          - configMap:
+              name: instana-data
+            name: instana-configmap

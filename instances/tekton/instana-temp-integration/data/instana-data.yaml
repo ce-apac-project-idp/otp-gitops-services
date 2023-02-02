@@ -1,0 +1,8 @@
+apiVersion: v1
+data:
+  instanaServer: https://ibmdevsandbox-instanaibm.instana.io
+  instanaEndpoint: api/application-monitoring/settings/application
+  instanaOCPClustername: hub-ocp
+kind: ConfigMap
+metadata:
+  name: instana-data
