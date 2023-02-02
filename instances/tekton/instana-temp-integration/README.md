@@ -1,4 +1,4 @@
-README
+# README
 
 # Aside
 
@@ -37,3 +37,20 @@ Image-deployer executes the following:
 3) It uses the git-data configmap which contains info about the git repo to push to. (ArgoCD then takes care of the rest from there)
 
 An example pipelinerun can be found in the samples directory too.
+
+
+# Additional Information
+
+## ConfigMap/Secret Injection
+
+Hardcoded values should be avoided where possible, please externalise non sensitive values to configmaps and sensitive values as secrets. Assumming we have a bunch of values we wish to externalise (Say, instana_server and instana_endpoint in the tekton task) we can include them within a configmap called "instana-data" (Recall I have a git-data and registry-data configmap as well for the same purpose)
+
+Introduce them to as a entry in the workspaces stanza of pipeline.yaml. You will notice that there is a pipeline directory in this folder. the Workspaces stanza contains, amongst others, the aforementioned reg-data and git-data configmaps referred to, within the context of the pipeline, as registry-configmap and git-configmap respectively.
+
+They are "referenced" in the pipelinerun object. I have provided a pipelinerun spec in the samples directory. Look at the workspaces stanza. Registry-data and git-data are defined there and mapped to the registry-configmap and git-configmap respectively.
+
+Referencing them in the tasks is quite simple. Look at "bp-task" within the task directory. Specifically, lines 85-88 (inclusive). Each parameter is defined in a file found within /workspace/name_of_cmap/name_of_parameter_here. 
+
+Please take care with name_of_cmap_here, this is the name of the cmap **within the scope of the task**. Look at lines 11 and 12 of this very task. The name is defined there on the task level and defined in line 44 at the pipeline level.
+
+The same can be applied for secrets.
