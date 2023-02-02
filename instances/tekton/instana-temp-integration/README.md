@@ -82,19 +82,19 @@ Configuring authn and authz is given [here](https://docs.openshift.com/acs/3.73/
 2) Azure Container Registry
 3) JFrog Artifactory
 
-In our instance, our external registry was Quay. As such, we followed the instructions given [here](https://docs.openshift.com/acs/3.73/integration/integrate-with-image-registries.html#manual-configuration-image-registry-qcr_integrate-with-image-registries). Unfortunately, the instructions given here is rather incomplete. One would assume having a Quay integration of type "Registry + Scanner" should suffice. This, unfortunately, is incorrect. Two sets of integrations are required. One of type "registry" and one of type "registry + scanner". Furthermore, two sets of distinct credentials are required for the "Registry + Scanner" integration. That is, one OAuth Token and a Robot Account. One would assume the robot account performs the authn while the OAuth token is required for authz. But this is simply not true. A Robot account is configured againsr certain repositories in Quay (which is essentially authz).
+In our instance, our external registry was Quay. As such, we followed the instructions given [here](https://docs.openshift.com/acs/3.73/integration/integrate-with-image-registries.html#manual-configuration-image-registry-qcr_integrate-with-image-registries). Unfortunately, the instructions given here is rather incomplete. One would assume having a Quay integration of type "Registry + Scanner" should suffice. This, unfortunately, is incorrect. Two sets of integrations are required. One of type "registry" and one of type "registry + scanner". Furthermore, two sets of distinct credentials are required for the "Registry + Scanner" integration. That is, one OAuth Token and a Robot Account. One would assume the robot account performs the authn while the OAuth token is required for authz. But this is simply not true. A Robot account is configured against certain repositories in Quay (which is essentially authz).
 
 To sum up, the following is required:
 
 1) One Quay integration of type "Registry + Scanner". Provide BOTH an OAuth Token and a Robot account (both can be generated from the Quay UI)
 2) One Quay integration of type "Registry". Provide a Robot account credentials here.
 
-Robot accounts can only be configured against existant registries, they cannot, unfortunately, be configured against Quay orgs. There is no means to associate a robot account with a registry programmatically. As such the robot account used was my very own quay creds., It would be incumbent for Quay to support a feature such as this.
+Robot accounts can only be configured against existant registries, they cannot, unfortunately, be configured against Quay orgs. There is no means to associate a robot account with a registry programmatically. As such the robot account used was my very own quay creds. It would be incumbent for Quay to support a feature such as this.
 
 ### Gotchas
 
 1) The buildConfig task responsible for performing the image push was set to a public organisation (registry) in Quay. That said, the resulting image defaults to private, clearly exceeding the maximum amount of private registries (which is 0 in our case). This is likely a bug on the Quay end.
 2) Why are two sets of credentials required for scanning private Quay registries. Both an OAuth Token and a Robot Account is required for the "Registry + Scanner" type, as opposed to either one of them.
-3) Why are two different Quay integrations required. That is, one "Registry" and one "Registry + Scanner" integration. We wrongfully assumed
-4) Round robin behaviour noted if two integrations are used. If one is configured correctly and the other is configured incorrectly, only 50% of image scans actually proceed. This is due to the apparent round robin behaviour.
+3) Why are two different Quay integrations required. That is, one "Registry" and one "Registry + Scanner" integration.
+4) Round robin behaviour noted if two integrations are used. If one credential is configured correctly while the other is configured incorrectly, only 50% of image scans actually proceed. This seems to indicate a round robin like behaviour, and should be the subject of further scrutiny in the future.
 
