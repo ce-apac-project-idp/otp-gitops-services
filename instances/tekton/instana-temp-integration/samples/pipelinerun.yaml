@@ -3,7 +3,7 @@ kind: PipelineRun
 metadata:
   annotations:
     pipeline.openshift.io/started-by: 'IAM#marwan.attar@ibm.com'
-  name: devsecops-40q8sz
+  name: devsecops-penglitest
   namespace: backstage
   labels:
     build-name: devsecops
@@ -11,15 +11,15 @@ metadata:
 spec:
   params:
     - name: app-name
-      value: asdf
+      value: testapp
     - name: repo-url
       value: 'git@github.com:ce-apac-project-idp/developer-repositories.git'
     - name: purpose
-      value: asdf
+      value: test
     - name: context-dir
       value: demo-app-react
     - name: developer
-      value: zxvf
+      value: pengli
   pipelineRef:
     name: devsecops
   serviceAccountName: pipeline
@@ -47,3 +47,9 @@ spec:
     - configMap:
         name: git-data
       name: git-configmap
+    - name: instana-credentials
+      secret:
+        secretName: instana-credentials
+    - configMap:
+        name: instana-data
+      name: instana-configmap

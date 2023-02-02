@@ -24,6 +24,10 @@ spec:
     type: string
     description: Name of the developer who kickstarted the pipeline from Backstage. Should be retrieved from backstage context.
     default: "default"  # Default to the developer named "default" in the event this was not provided.
+  - name: instana_app_filter_key
+    type: string
+    description: Name of the developer who kickstarted the pipeline from Backstage. Should be retrieved from backstage context.
+    default: "app"  # Default to the developer named "default" in the event this was not provided.
   workspaces:
   - name: shared-data
     description: |
@@ -34,6 +38,10 @@ spec:
     description: Registry related information housed within said configmap. 
   - name: git-configmap
     description: Registry related information housed within said configmap. 
+  - name: instana-credentials
+    description: Instana credentials required to invoke instana api for crateing related application to enable observability.
+  - name: instana-configmap
+    description: Instana related information housed within said configmap. 
   tasks:
   - name: build-push-image
     taskRef:
@@ -108,3 +116,20 @@ spec:
       workspace: ssh-credentials
     - name: gitops
       workspace: git-configmap
+  - name: create-instana-app
+    runAfter: ["image-deployer"]
+    taskRef:
+      name: create-instana-app
+    workspaces:
+    - name: configs
+      workspace: instana-configmap
+    - name: credentials
+      workspace: instana-credentials
+    params:
+    - name: instana_app_name
+      value: $(params.developer)-$(params.app-name)
+    - name: instana_app_filter_key
+      value: $(params.instana_app_filter_key)
+    - name: instana_app_filter_value
+      value: $(params.developer)-$(params.app-name)
+
