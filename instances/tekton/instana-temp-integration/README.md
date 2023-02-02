@@ -68,7 +68,7 @@ To this end, the client requires:
 1) The RHACS binary
 2) A means of authenticating to the instance
 
-We have baked the binary (called roxctl) on a redhat universal image within the Dockerfile. Please refer to this [README](LINK_HERE) for more information.
+We have baked the binary (called roxctl) on a redhat universal image within the Dockerfile. Please refer to this [README](https://github.com/ce-apac-project-idp/artefacts/tree/main/tekton/tasks/rhacs-client#readme) for more information.
 
 Authenticating to the instance is quite simple, roxctl assumes an environment variable called [ROX_API_TOKEN](https://docs.openshift.com/acs/3.73/cli/getting-started-cli.html#cli-authentication_cli-getting-started) be accessible within the user session. The token was made a secret in the cluster and introduced to the task by means of an environment variable. The tasks, image-scanner and image-checker within the tasks directory shed more light onto this. It is relatively straightforward to see how said secret is injected and rendered an environment variable. 
 
