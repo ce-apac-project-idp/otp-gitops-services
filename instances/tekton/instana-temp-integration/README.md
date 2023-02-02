@@ -54,3 +54,47 @@ Referencing them in the tasks is quite simple. Look at "bp-task" within the task
 Please take care with name_of_cmap_here, this is the name of the cmap **within the scope of the task**. Look at lines 11 and 12 of this very task. The name is defined there on the task level and defined in line 44 at the pipeline level.
 
 The same can be applied for secrets.
+
+## RHACS integration
+
+We use RHACS to perform the image checks and scan prior to deployment. We invoke RHACS scans through an API driven fashion. The processes running in our tekton tasks are effectively our RHACS clients. And our RHACS instance will then perform the calls on our behalf. On a high level, the flow is as such:
+
+RHACS client (tekton task) -> RHACS instance -> Remote registry (public/private) -> RHACS instance -> RHACS client
+
+Depending on the call, results can be persisted at the data layer (not shown above)
+
+To this end, the client requires:
+
+1) The RHACS binary
+2) A means of authenticating to the instance
+
+We have baked the binary (called roxctl) on a redhat universal image within the Dockerfile. Please refer to this [README](LINK_HERE) for more information.
+
+Authenticating to the instance is quite simple, roxctl assumes an environment variable called [ROX_API_TOKEN](https://docs.openshift.com/acs/3.73/cli/getting-started-cli.html#cli-authentication_cli-getting-started) be accessible within the user session. The token was made a secret in the cluster and introduced to the task by means of an environment variable. The tasks, image-scanner and image-checker within the tasks directory shed more light onto this. It is relatively straightforward to see how said secret is injected and rendered an environment variable. 
+
+The [link](https://docs.openshift.com/acs/3.73/cli/getting-started-cli.html#cli-authentication_cli-getting-started) given above discusses how one can generate said api token. Ensure you copy this and save it directly to your cluster as a secret. You may wish to save this within your organisations's chosen external secret provider and use K8's [ExternalSecret](https://external-secrets.io/v0.7.2/) framework to ingest this, or perhaps via the [SealedSecrets](https://github.com/bitnami-labs/sealed-secrets) framework.
+
+Recall, the RHACS instance performs the requests (eg, image scans) on the behalf of the client and, as such, requires authentication and authorisation be configured beforehand in the event your registry is private. You may wish to stop here in the event your instance is public, or perhaps reconsider your decision and set it to private.
+
+Configuring authn and authz is given [here](https://docs.openshift.com/acs/3.73/integration/integrate-with-image-registries.html#manual-configuration-image-registry). Various registries are supported, including, but not limited to:
+
+1) Amazon ECR
+2) Azure Container Registry
+3) JFrog Artifactory
+
+In our instance, our external registry was Quay. As such, we followed the instructions given [here](https://docs.openshift.com/acs/3.73/integration/integrate-with-image-registries.html#manual-configuration-image-registry-qcr_integrate-with-image-registries). Unfortunately, the instructions given here is rather incomplete. One would assume having a Quay integration of type "Registry + Scanner" should suffice. This, unfortunately, is incorrect. Two sets of integrations are required. One of type "registry" and one of type "registry + scanner". Furthermore, two sets of distinct credentials are required for the "Registry + Scanner" integration. That is, one OAuth Token and a Robot Account. One would assume the robot account performs the authn while the OAuth token is required for authz. But this is simply not true. A Robot account is configured againsr certain repositories in Quay (which is essentially authz).
+
+To sum up, the following is required:
+
+1) One Quay integration of type "Registry + Scanner". Provide BOTH an OAuth Token and a Robot account (both can be generated from the Quay UI)
+2) One Quay integration of type "Registry". Provide a Robot account credentials here.
+
+Robot accounts can only be configured against existant registries, they cannot, unfortunately, be configured against Quay orgs. There is no means to associate a robot account with a registry programmatically. As such the robot account used was my very own quay creds., It would be incumbent for Quay to support a feature such as this.
+
+### Gotchas
+
+1) The buildConfig task responsible for performing the image push was set to a public organisation (registry) in Quay. That said, the resulting image defaults to private, clearly exceeding the maximum amount of private registries (which is 0 in our case). This is likely a bug on the Quay end.
+2) Why are two sets of credentials required for scanning private Quay registries. Both an OAuth Token and a Robot Account is required for the "Registry + Scanner" type, as opposed to either one of them.
+3) Why are two different Quay integrations required. That is, one "Registry" and one "Registry + Scanner" integration. We wrongfully assumed
+4) Round robin behaviour noted if two integrations are used. If one is configured correctly and the other is configured incorrectly, only 50% of image scans actually proceed. This is due to the apparent round robin behaviour.
+
