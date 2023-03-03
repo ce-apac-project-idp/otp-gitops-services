@@ -1,19 +1,19 @@
-apiVersion: batch/v1
-kind: Job
-metadata:
-  name: provider-tf-configuration
-  namespace: crossplane-system
-spec:
-  template:
-    spec:
-      serviceAccountName: configure-provider-deployment-sa
-      containers:
-      - name: provider-configuration
-        image: quay.io/langley_millard_ibm/crossplane-tf-provider-config
-        command: ["./configure-deployment.sh"]
-        env:
-        - name: KUBECONFIG
-          value: "/tmp/config"
-        imagePullPolicy: Always
-      restartPolicy: OnFailure
-  backoffLimit: 2
+# apiVersion: batch/v1
+# kind: Job
+# metadata:
+#   name: provider-tf-configuration
+#   namespace: crossplane-system
+# spec:
+#   template:
+#     spec:
+#       serviceAccountName: configure-provider-deployment-sa
+#       containers:
+#       - name: provider-configuration
+#         image: quay.io/langley_millard_ibm/crossplane-tf-provider-config
+#         command: ["./configure-deployment.sh"]
+#         env:
+#         - name: KUBECONFIG
+#           value: "/tmp/config"
+#         imagePullPolicy: Always
+#       restartPolicy: OnFailure
+#   backoffLimit: 2
