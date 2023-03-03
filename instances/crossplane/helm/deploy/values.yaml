@@ -1,9 +1,7 @@
-# These are the default values - just an example. See here for more: LINK
-replicas: 1
-
-deploymentStrategy: RollingUpdate
-
 crossplane:
+  replicas: 1
+  deploymentStrategy: RollingUpdate
+
   image:
     repository: crossplane/crossplane
     tag: alpha
