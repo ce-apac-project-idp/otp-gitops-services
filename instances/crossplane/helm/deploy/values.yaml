@@ -3,15 +3,16 @@ replicas: 1
 
 deploymentStrategy: RollingUpdate
 
-image:
-  repository: crossplane/crossplane
-  tag: alpha
-  pullPolicy: Always
+crossplane:
+  image:
+    repository: crossplane/crossplane
+    tag: alpha
+    pullPolicy: Always
 
-securityContextCrossplane:
-  runAsUser: null
-  runAsGroup: null
+  securityContextCrossplane:
+    runAsUser: null
+    runAsGroup: null
 
-securityContextRBACManager:
-  runAsUser: null
-  runAsGroup: null
+  securityContextRBACManager:
+    runAsUser: null
+    runAsGroup: null
