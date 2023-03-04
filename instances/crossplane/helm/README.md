@@ -66,6 +66,13 @@ The provider role, no more and no less, should contain the following:
 1) Anyuid
 2) R/W privileges for the aws specific resources. Specifically, those found in the *.aws.crossplane.io apiVersion.
 
+In relation to point 2 above, perform the following command: 
+
+```
+oc api-resources | grep crossplane > resources.log
+```
+
+All the required should be present in the third column. The role named "aws-provider-role" created within the Infra currently has the admin role assigned to it. This role should contain the aforementioned resources. Sadly wildcards are not supported.
 
 The Job role, no more and no less, should contain the following:
 
