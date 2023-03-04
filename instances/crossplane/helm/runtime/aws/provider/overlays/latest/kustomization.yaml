@@ -13,4 +13,4 @@ patches:
     patch: |-
       - op: replace
         path: /spec/package
-        value: 'crossplane/provider-aws:alpha'
+        value: 'crossplane/provider-aws:v0.37.1'
