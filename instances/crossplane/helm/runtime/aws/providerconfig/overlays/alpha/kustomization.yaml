@@ -16,5 +16,5 @@ patches:
         value: 'creds'
       - op: replace
         path: /spec/credentials/secretRef/name
-        value: 'aws-creds'
+        value: 'provider-aws'
       
