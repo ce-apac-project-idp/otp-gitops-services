@@ -1,0 +1,111 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: image-builder
+spec:
+  description: >-
+    TODO: Add some description here.
+  workspaces:
+    - name: output
+      description: The git repo will be cloned onto the volume backing this Workspace.
+    - name: registry
+      description: External registry related information captured here.
+  params:
+    - name: gitUrl
+      description: Repository URL to clone from.
+      type: string
+    - name: appName
+      description: Unique name of the application.
+      type: string
+      default: ""
+    - name: purpose
+      description: This can be dev or test for instance.
+      default: "test"
+    - name: contextDir
+      description: The context directory, should it exist.
+      type: string
+      default: ""
+    - name: developer 
+      description: Developer who initiated the workflow/ 
+      type: string
+  results:
+    - name: dockerImageReference
+      description: Location of pushed image. Defaults to the internal one provided by OpenShift
+    - name: sha
+      description: SHA Reference. 
+  steps:
+    - name: builder
+      image: quay.io/marwan_attar_ibm/idp-image-builder # Should not be parametrised in the pipeline level. Keep as is.
+      env:
+      - name: URL
+        value: "$(params.gitUrl)"
+      - name: APP_NAME
+        value: $(params.appName)
+      - name: PURPOSE
+        value: $(params.purpose)
+      - name: CONTEXT_DIR
+        value: $(params.contextDir)
+      - name: DEVELOPER
+        value: $(params.developer)
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+      script: |
+
+        output=$(oc get buildconfig -l app=$DEVELOPER-$APP_NAME)
+
+        if [ -z "$output" ]
+        then
+            echo "Build config not present, creating.."
+          
+            yq e -i '.spec.source.git.uri = env(URL)' /tmp/build-config.yaml
+
+            if [ -n "$CONTEXT_DIR" ]
+            then
+               yq e -i '.spec.source.contextDir = env(CONTEXT_DIR)' /tmp/build-config.yaml
+            else
+               echo "No context directory specified. Using default."
+            fi 
+
+            name="$DEVELOPER-$APP_NAME" yq e -i '.metadata.name = env(name)' /tmp/build-config.yaml
+            appLabel="$DEVELOPER-$APP_NAME" yq e -i '.metadata.labels.app = env(appLabel)' /tmp/build-config.yaml
+            yq e -i '.metadata.labels.developer= env(DEVELOPER)' /tmp/build-config.yaml
+            yq e -i '.metadata.labels.purpose= env(PURPOSE)' /tmp/build-config.yaml
+
+            
+            registry=$(</workspace/registry/registry)
+            organisation=$(</workspace/registry/organisation)
+            gitSecretName=$(</workspace/registry/gitSecretName) yq e -i '.spec.source.sourceSecret.name = env(gitSecretName)' /tmp/build-config.yaml
+            regSecretName=$(</workspace/registry/regSecretName) yq e -i '.spec.output.pushSecret.name = env(regSecretName)' /tmp/build-config.yaml
+
+            dockerImage="$registry/$organisation/$DEVELOPER-$APP_NAME:$PURPOSE" yq e -i '.spec.output.to.name = env(dockerImage)' /tmp/build-config.yaml
+            oc create -f /tmp/build-config.yaml
+            echo "Build config created"
+        else
+             echo "Build config already present"
+        fi
+
+        echo "Running build..."
+
+        oc start-build $DEVELOPER-$APP_NAME 
+        sleep 5
+        build_name=$(oc get builds --sort-by={metadata.creationTimestamp} --no-headers | tac | head -n 1 | awk '{print $1;}')
+
+        echo "Build in progress. Waiting for completion...."
+
+        # Wait
+
+        while [[ $(oc get build $build_name -o jsonpath="{.status.phase}") == "Running" ]]; do
+          sleep 30
+          echo "Still waiting...."
+        done
+
+        # Just because it is running anymore it does not mean it is "Complete". TODO: Tighten the logic here. I am assuming it is "Complete" below.
+        echo "Build complete"
+
+        # Grab output
+        IMAGE=$(oc get build $build_name -o=jsonpath='{.status.outputDockerImageReference}')
+        SHA=$(oc get build $build_name -o=jsonpath='{.status.output.to.imageDigest}')
+        # Pass to downstream task
+        echo $IMAGE | tee /tekton/results/dockerImageReference
+        echo $SHA | tee /tekton/results/sha

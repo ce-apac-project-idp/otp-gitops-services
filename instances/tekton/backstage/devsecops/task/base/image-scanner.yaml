@@ -1,0 +1,53 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: image-scan
+spec:
+  params:
+    - name: dockerImageReference
+      description: Location of docker image. 
+    - name: sha
+      description: SHA reference.
+  results:
+    - name: dockerImageReference
+      description: Location of pushed image. Defaults to the internal one provided by OpenShift
+    - name: sha
+      description: SHA Reference. 
+  workspaces:
+    - description: Output shared workspace. 
+      name: output
+  steps:
+    - env:
+        - name: ROX_API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              key: api_key
+              name: rhacs-credentials
+        - name: ROX_CENTRAL_ENDPOINT
+          valueFrom:
+            secretKeyRef:
+              key: rox_central_endpoint
+              name: rhacs-credentials
+        - name: IMAGE
+          value: "$(params.dockerImageReference)"
+        - name: SHA
+          value: "$(params.sha)"
+      image: quay.io/marwan_attar_ibm/rox-client
+      name: rox-image-check
+      resources: {}
+      script: |
+        #!/usr/bin/env bash
+
+        set +x
+
+        endpoint=${ROX_CENTRAL_ENDPOINT}:443
+
+        # It seems as though a leading whitespace is present in emitted results. No idea why.
+        image=$(echo $IMAGE | tr -d ' ')
+        sha=$(echo $SHA | tr -d ' ')
+
+        roxctl image scan --insecure-skip-tls-verify -e $endpoint --image ${image}@${sha} 
+
+        # Pass to downstream task
+        echo $IMAGE | tee /tekton/results/dockerImageReference
+        echo $SHA | tee /tekton/results/sha

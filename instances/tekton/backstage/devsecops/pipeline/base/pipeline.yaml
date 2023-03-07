@@ -1,0 +1,104 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: devsecops
+  labels:
+    build-name: changeme
+spec:
+  description: |
+   Devsecops pipeline triggered upon developer request to deploy an application defined in a Git repository.
+  params:
+  - name: app-name
+    type: string
+    description: Namespace scope unique name of the application. This is an identifier in OpenShift. 
+  - name: repo-url
+    type: string
+    description: The git repository URL to clone from.
+  - name: purpose 
+    type: string
+    description: Purpose, Ie, dev or test. 
+  - name: context-dir
+    type: string
+    description: Context directory from GitHub provided link. This is optional.
+  - name: developer
+    type: string
+    description: Name of the developer who kickstarted the pipeline from Backstage. Should be retrieved from backstage context.
+    default: "default"  # Default to the developer named "default" in the event this was not provided.
+  workspaces:
+  - name: shared-data
+    description: |
+      Shared, persisted data for the tasks constituting this pipeline. For instance, image location and SHA used for Stackrox tasks.
+  - name: ssh-credentials
+    description: SSH credentials required to perform git commands against select repositories from the Gitops organisation.
+  - name: registry-configmap
+    description: Registry related information housed within said configmap. 
+  - name: git-configmap
+    description: Registry related information housed within said configmap. 
+  tasks:
+  - name: build-push-image
+    taskRef:
+      name: image-builder
+    workspaces:
+    - name: output
+      workspace: shared-data
+    - name: registry
+      workspace: registry-configmap
+    params:
+    - name: gitUrl
+      value: $(params.repo-url)
+    - name: appName
+      value: $(params.app-name)
+    - name: purpose
+      value: $(params.purpose)
+    - name: contextDir
+      value: $(params.context-dir)
+    - name: developer
+      value: $(params.developer) 
+  - name: image-checker
+    runAfter: ["build-push-image"]
+    taskRef:
+      name: image-check
+    params:
+    - name: dockerImageReference
+      value: $(tasks.build-push-image.results.dockerImageReference)
+    - name: sha 
+      value: $(tasks.build-push-image.results.sha)
+    workspaces:
+    - name: output
+      workspace: shared-data 
+  - name: image-scanner
+    runAfter: ["image-checker"]
+    taskRef:
+      name: image-scan
+    params:
+    - name: dockerImageReference
+      value: $(tasks.build-push-image.results.dockerImageReference)
+    - name: sha
+      value: $(tasks.build-push-image.results.sha)
+    workspaces:
+    - name: output
+      workspace: shared-data
+  - name: image-deployer
+    runAfter: ["image-scanner"]
+    taskRef:
+      name: image-deploy
+    params:
+    - name: dockerImageReference
+      value: $(tasks.build-push-image.results.dockerImageReference)
+    - name: sha
+      value: $(tasks.build-push-image.results.sha)
+    - name: developer
+      value: $(params.developer)
+    - name: appName
+      value: $(params.app-name)
+    - name: purpose
+      value: $(params.purpose)
+    - name: verbose
+      value: true
+    workspaces:
+    - name: source
+      workspace: shared-data
+    - name: ssh-directory
+      workspace: ssh-credentials
+    - name: gitops
+      workspace: git-configmap
