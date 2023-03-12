@@ -62,7 +62,7 @@ spec:
   steps:
     - name: gitops
       image: quay.io/marwan_attar_ibm/idp-image-deployer 
-      workingDir: $(workspaces.source.path)
+      workingDir: $(workspaces.output.path)
       env:
       - name: HOME
         value: $(params.userHome)
