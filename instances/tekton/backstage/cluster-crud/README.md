@@ -14,7 +14,7 @@ This section concerns AWS, but similar lines of reasoning can be applied for oth
 
 This assumes an instance of IBM Secrets Manager has been created. Please refer to the README given in the "external-secrets-instance" for more information. This also assumes an access and secret key pair created within AWS is created within your secret store, in addition to the RedHat Pull Secret and the private component of the key pair you created in the pre-requisite (predeploy) section.
 
-Create the following keys your secret store. In IBM Secrets Manager, the type is "other secret type":
+Create the following keys in your secret store. In IBM Secrets Manager, the type is "other secret type":
 
 1) awsAccessKey
 2) awsSecretKey
@@ -22,7 +22,7 @@ Create the following keys your secret store. In IBM Secrets Manager, the type is
 4) openshiftSSHPrivateKey
 
 Note down their respective ID's. Substitute the ID's as found the env section of the "secret-generator" step of the "generate-resources" Tekton Task. In the event you decided to use alternative names to those presented above, make the corresponding changes to the fields with names ending in **NAME** too.
-Please note 
+
 
 ## Decisions
 

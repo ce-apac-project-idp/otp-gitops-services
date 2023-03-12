@@ -74,36 +74,42 @@ spec:
         value: edcc6329-e70b-0dfe-cc90-4996f3de877d
       - name: WORKSPACE
         value: "$(workspaces.output.path)"
+      - name: PLATFORM_SECRET_SUFFIX # If you decide to change the value associated with this field here, ensure the corresponding changes are done in the "generate-cluster-deployment" step. 
+        value: aws-creds
+      - name: SSH_SECRET_SUFFIX # If you decide to change the value associated with this field here, ensure the corresponding changes are done in the "generate-cluster-deployment" step.
+        value: ssh-private-key
+      - name: PULL_SECRET_SUFFIX # If you decide to change the value associated with this field here, ensure the corresponding changes are done in the "generate-cluster-deployment" step.
+        value: pull-secret
       script: | 
         #!/usr/bin/env bash
 
         cd /tmp
         # AWS Creds
-        awsCredsSecretName="$CLUSTER_NAME-aws-creds" yq e -i '.metadata.name = env(awsCredsSecretName)' /tmp/secret-aws-creds.yaml
+        awsCredsSecretName="$CLUSTER_NAME-$PLATFORM_SECRET_SUFFIX" yq e -i '.metadata.name = env(awsCredsSecretName)' /tmp/secret-aws-creds.yaml
         yq e -i '.metadata.namespace = env(CLUSTER_NAME)' /tmp/secret-aws-creds.yaml
         yq e -i '.spec.data[0].secretKey = env(AWS_ACCESS_KEY_NAME)' /tmp/secret-aws-creds.yaml
         yq e -i '.spec.data[0].remoteRef.key = env(AWS_ACCESS_KEY_REF)' /tmp/secret-aws-creds.yaml
         yq e -i '.spec.data[1].secretKey = env(AWS_SECRET_KEY_NAME)' /tmp/secret-aws-creds.yaml
         yq e -i '.spec.data[1].remoteRef.key = env(AWS_SECRET_KEY_REF)' /tmp/secret-aws-creds.yaml
         yq e -i '.spec.secretStoreRef.name = env(SECRET_STORE_REF)' /tmp/secret-aws-creds.yaml
-        targetSecretName="$CLUSTER_NAME-aws-creds" yq e -i '.spec.target.name = env(targetSecretName)' /tmp/secret-aws-creds.yaml
+        targetSecretName="$CLUSTER_NAME-$PLATFORM_SECRET_SUFFIX" yq e -i '.spec.target.name = env(targetSecretName)' /tmp/secret-aws-creds.yaml
 
 
         # RedHat Pull Secret
-        pullSecretName="$CLUSTER_NAME-pull-secret" yq e -i '.metadata.name = env(pullSecretName)' /tmp/secret-pull-secret.yaml
+        pullSecretName="$CLUSTER_NAME-$PULL_SECRET_SUFFIX" yq e -i '.metadata.name = env(pullSecretName)' /tmp/secret-pull-secret.yaml
         yq e -i '.metadata.namespace = env(CLUSTER_NAME)' /tmp/secret-pull-secret.yaml
         yq e -i '.spec.data[0].secretKey = env(OPENSHIFT_PULL_SECRET_KEY_NAME)' /tmp/secret-pull-secret.yaml
         yq e -i '.spec.data[0].remoteRef.key = env(OPENSHIFT_PULL_SECRET_KEY_REF)' /tmp/secret-pull-secret.yaml
         yq e -i '.spec.secretStoreRef.name = env(SECRET_STORE_REF)' /tmp/secret-pull-secret.yaml
-        targetSecretName="$CLUSTER_NAME-pull-secret" yq e -i '.spec.target.name = env(targetSecretName)' /tmp/secret-pull-secret.yaml
+        targetSecretName="$CLUSTER_NAME-$PULL_SECRET_SUFFIX" yq e -i '.spec.target.name = env(targetSecretName)' /tmp/secret-pull-secret.yaml
 
         # SSH Private Key
-        sshSecretName="$CLUSTER_NAME-ssh-private-key" yq e -i '.metadata.name = env(sshSecretName)' /tmp/secret-ssh-private-key.yaml
+        sshSecretName="$CLUSTER_NAME-$SSH_SECRET_SUFFIX" yq e -i '.metadata.name = env(sshSecretName)' /tmp/secret-ssh-private-key.yaml
         yq e -i '.metadata.namespace = env(CLUSTER_NAME)' /tmp/secret-ssh-private-key.yaml
         yq e -i '.spec.data[0].secretKey = env(SSH_SECRET_KEY_NAME)' /tmp/secret-ssh-private-key.yaml
         yq e -i '.spec.data[0].remoteRef.key = env(SSH_SECRET_KEY_REF)' /tmp/secret-ssh-private-key.yaml
         yq e -i '.spec.secretStoreRef.name = env(SECRET_STORE_REF)' /tmp/secret-ssh-private-key.yaml
-        targetSecretName="$CLUSTER_NAME-ssh-private-key" yq e -i '.spec.target.name = env(targetSecretName)' /tmp/secret-ssh-private-key.yaml
+        targetSecretName="$CLUSTER_NAME-$SSH_SECRET_SUFFIX" yq e -i '.spec.target.name = env(targetSecretName)' /tmp/secret-ssh-private-key.yaml
 
         cp secret-ssh-private-key.yaml secret-pull-secret.yaml secret-aws-creds.yaml $WORKSPACE
     - name: generate-install-config
@@ -111,7 +117,7 @@ spec:
       env:
       - name: CONFIGMAP
         value: "$(params.configMapName)"
-      - name: CONFIGMAP_NAMESPACE
+      - name: RESOURCE_NAMESPACE
         value: "$(params.resourcesNamespace)"
       - name: CLUSTER_NAME
         value: "$(params.clusterName)"
@@ -119,6 +125,8 @@ spec:
         value: "$(params.region)"
       - name: WORKSPACE
         value: "$(workspaces.output.path)"
+      - name: PUBLIC_KEY_SECRET_NAME
+        value: aws-ssh-secret # This is just the public component.
       script: |
         #!/usr/bin/env bash
 
@@ -127,7 +135,7 @@ spec:
         # This configmap needs to be Git'opsed
         # TODO: Put an immutable field in the configmap as well to ensure it remains static throughout its lifetime.
         # See here: https://www.cloudytuts.com/tutorials/kubernetes/how-to-create-immutable-configmaps-and-secrets/
-        oc get configmap $CONFIGMAP -n $CONFIGMAP_NAMESPACE -o yaml > /tmp/rhacm-aws-cluster-crud-cmap.yaml
+        oc get configmap $CONFIGMAP -n $RESOURCE_NAMESPACE -o yaml > /tmp/rhacm-aws-cluster-crud-cmap.yaml
 
     
         # Parameters passed to the Tekton Job via user input in Backstage 
@@ -156,30 +164,17 @@ spec:
 
 
         # We need the public component of the SSH key - This should already be a created secret
-        pubKey=`oc get secret aws-ssh-secret -n scratchspace -o yaml | yq '.data.ssh-publickey' | base64 -d` yq e -i '.sshKey = env(pubKey)' /tmp/install-config-template.yaml
+        pubKey=`oc get secret $PUBLIC_KEY_SECRET_NAME -n $RESOURCE_NAMESPACE -o yaml | yq '.data.ssh-publickey' | base64 -d` yq e -i '.sshKey = env(pubKey)' /tmp/install-config-template.yaml
 
         # Encoded File. Note how the "" were placed around install-config.yaml. This is because the actual field name contains a "." which is rather intuitive. The dot in this case does NOT represent a nested field.
         encoded=`cat install-config-template.yaml | base64 -w 0` yq e -i '.data."install-config.yaml" = env(encoded)' /tmp/install-config.yaml 
         yq e -i '.metadata.namespace = env(CLUSTER_NAME)' /tmp/install-config.yaml
-        # https://stackoverflow.com/questions/39568412/creating-ssh-secrets-key-file-in-kubernetes. The secret was created as such.
         secretName="$CLUSTER_NAME-install-config" yq e -i '.metadata.name = env(secretName)' /tmp/install-config.yaml
-
-        # https://github.com/tektoncd/catalog/blob/main/task/git-clone/0.9/git-clone.yaml
-        # See the link above in relation to how to save files to shared workspace. line 25, 155, 198 and 228 in particular.
 
         # This can be defined as an env variable in the Tekton task referencing the input workspace.
         cp /tmp/install-config.yaml $WORKSPACE
         cp rhacm-aws-cluster-crud-cmap.yaml $WORKSPACE
         
-        # TODO: Pass the configmap to the downstream steps within this Task to avoid the overhead of calling it all the time.
-        # We will assume it remains static
-
-        # We also need to pass some results downstream to the next task, which creates the ClusterDeployment. 
-        # The CR is a function of aws-creds-ref, pull-secret ref, ssh-secret-ref, install-config-ref, base domain, and the name of the cluster.
-        # The name of the cluster is given via pipeline inputs. The secrets (besides install-config-ref) should be present as inputs to the pipeline as they are static so we can effectively hardcode them
-        # The install-config-ref secret and the value associated with the baseDomain will be passed to the downstream task.
-        # Techincally we don't need to pass the baseDomain as this is present in the configMap but says the overhead of an API call.
-        # See the bp-task and the pipeline of the devsecops module for more information.
         baseDomain=$(yq '.data.baseDomain' rhacm-aws-cluster-crud-cmap.yaml)
         installConfigRef="$CLUSTER_NAME-install-config"
 
@@ -198,11 +193,11 @@ spec:
         value: "$(workspaces.output.path)"
       - name: VERSION
         value: "$(params.version)"
-      - name: PLATFORM_SECRET_SUFFIX
+      - name: PLATFORM_SECRET_SUFFIX # If you decide to change the value associated with this field here, ensure the corresponding changes are done in the "secret-generator" step.
         value: aws-creds
-      - name: SSH_SECRET_SUFFIX
+      - name: SSH_SECRET_SUFFIX # If you decide to change the value associated with this field here, ensure the corresponding changes are done in the "secret-generator" step.
         value: ssh-private-key
-      - name: PULL_SECRET_SUFFIX
+      - name: PULL_SECRET_SUFFIX # If you decide to change the value associated with this field here, ensure the corresponding changes are done in the "secret-generator" step.
         value: pull-secret
       script: |
         #!/usr/bin/env bash
