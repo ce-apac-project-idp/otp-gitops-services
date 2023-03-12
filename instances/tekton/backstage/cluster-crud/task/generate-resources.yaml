@@ -49,57 +49,63 @@ spec:
         yq e -i '.metadata.annotations."kubernetes.io/metadata.name" = env(CLUSTER_NAME)' /tmp/namespace.yaml
 
         cp /tmp/namespace.yaml $WORKSPACE
-    - name: pull-secret-generator
-      image: quay.io/openshift/origin-cli
+    - name: secret-generator
+      image: quay.io/marwan_attar_ibm/rhacm-install-secret-generator 
       env:
       - name: CLUSTER_NAME
         value: "$(params.clusterName)"
+      - name: AWS_ACCESS_KEY_NAME
+        value: awsAccessKey
+      - name: AWS_ACCESS_KEY_REF
+        value: ade6c30f-97a9-87c8-31ea-fdd7e14598fd
+      - name: AWS_SECRET_KEY_NAME
+        value: awsSecretKey
+      - name: AWS_SECRET_KEY_REF
+        value: 36d87095-a40d-aa4a-e110-7de764cb018b
+      - name: SECRET_STORE_REF
+        value: cluster
+      - name: OPENSHIFT_PULL_SECRET_KEY_NAME
+        value: openshiftPullSecret
+      - name: OPENSHIFT_PULL_SECRET_KEY_REF
+        value: d11eb84d-7a78-4dfd-0411-a32c3cae84c9
+      - name: SSH_SECRET_KEY_NAME
+        value: openshiftSSHPrivateKey
+      - name: SSH_SECRET_KEY_REF
+        value: edcc6329-e70b-0dfe-cc90-4996f3de877d
       - name: WORKSPACE
         value: "$(workspaces.output.path)"
-      - name: RHACM_AWS_GLOBAL_SECRET
-        value: rhacm-aws-creds
-      - name: RHACM_AWS_GLOBAL_SECRET_NAMESPACE
-        value: scratchspace # Move this to some other namespace.
       script: | 
         #!/usr/bin/env bash
+
         cd /tmp
-        # TODO: Parametrise the name of this secret
-        oc get secret $RHACM_AWS_GLOBAL_SECRET -n $RHACM_AWS_GLOBAL_SECRET_NAMESPACE -o=jsonpath='{.data.pullSecret}' | base64 -d > dcj.json
-        # The name of the secret ought to be parametrised. The cluster deployment step should accept this parameter.
-        oc create secret generic --namespace $CLUSTER_NAME --dry-run=client $CLUSTER_NAME-pull-secret  --from-file=.dockerconfigjson=dcj.json  --type=kubernetes.io/dockerconfigjson -o yaml > $WORKSPACE/pull-secret.yaml
-    - name: cloud-creds-secret-generator
-      image: quay.io/openshift/origin-cli
-      env:
-      - name: CLUSTER_NAME
-        value: "$(params.clusterName)"
-      - name: WORKSPACE
-        value: "$(workspaces.output.path)"
-      - name: RHACM_AWS_GLOBAL_SECRET
-        value: rhacm-aws-creds
-      - name: RHACM_AWS_GLOBAL_SECRET_NAMESPACE
-        value: scratchspace # Move this to some other namespace.
-      script: | 
-        #!/usr/bin/env bash
-        cd /tmp
-        accessKeyId=$(oc get secret $RHACM_AWS_GLOBAL_SECRET --namespace $RHACM_AWS_GLOBAL_SECRET_NAMESPACE -o=jsonpath='{.data.aws_access_key_id}' | base64 -d)
-        acessSecretKey=$(oc get secret $RHACM_AWS_GLOBAL_SECRET --namespace $RHACM_AWS_GLOBAL_SECRET_NAMESPACE -o=jsonpath='{.data.aws_secret_access_key}' | base64 -d)
-        oc create secret generic $CLUSTER_NAME-aws-creds --namespace $CLUSTER_NAME --dry-run=client  --from-literal=aws_access_key_id=$accessKeyId --from-literal=aws_secret_access_key=$acessSecretKey -o yaml > $WORKSPACE/cloud-creds.yaml
-    - name: ssh-private-key-generator
-      image: quay.io/openshift/origin-cli
-      env:
-      - name: CLUSTER_NAME
-        value: "$(params.clusterName)"
-      - name: WORKSPACE
-        value: "$(workspaces.output.path)"
-      - name: RHACM_AWS_GLOBAL_SECRET
-        value: rhacm-aws-creds
-      - name: RHACM_AWS_GLOBAL_SECRET_NAMESPACE
-        value: scratchspace # Move this to some other namespace.
-      script: | 
-        #!/usr/bin/env bash
-        cd /tmp
-        oc get secret $RHACM_AWS_GLOBAL_SECRET --namespace $RHACM_AWS_GLOBAL_SECRET_NAMESPACE -o=jsonpath='{.data.ssh-privatekey}' | base64 -d > privateKey
-        oc create secret generic $CLUSTER_NAME-ssh-private-key --dry-run=client --from-file=ssh-privatekey=privateKey -o yaml > $WORKSPACE/ssh-key.yaml
+        # AWS Creds
+        awsCredsSecretName="$CLUSTER_NAME-aws-creds" yq e -i '.metadata.name = env(awsCredsSecretName)' /tmp/secret-aws-creds.yaml
+        yq e -i '.metadata.namespace = env(CLUSTER_NAME)' /tmp/secret-aws-creds.yaml
+        yq e -i '.spec.data[0].secretKey = env(AWS_ACCESS_KEY_NAME)' /tmp/secret-aws-creds.yaml
+        yq e -i '.spec.data[0].remoteRef.key = env(AWS_ACCESS_KEY_REF)' /tmp/secret-aws-creds.yaml
+        yq e -i '.spec.data[1].secretKey = env(AWS_SECRET_KEY_NAME)' /tmp/secret-aws-creds.yaml
+        yq e -i '.spec.data[1].remoteRef.key = env(AWS_SECRET_KEY_REF)' /tmp/secret-aws-creds.yaml
+        yq e -i '.spec.secretStoreRef.name = env(SECRET_STORE_REF)' /tmp/secret-aws-creds.yaml
+        targetSecretName="$CLUSTER_NAME-aws-creds" yq e -i '.spec.target.name = env(targetSecretName)' /tmp/secret-aws-creds.yaml
+
+
+        # RedHat Pull Secret
+        pullSecretName="$CLUSTER_NAME-pull-secret" yq e -i '.metadata.name = env(pullSecretName)' /tmp/secret-pull-secret.yaml
+        yq e -i '.metadata.namespace = env(CLUSTER_NAME)' /tmp/secret-pull-secret.yaml
+        yq e -i '.spec.data[0].secretKey = env(OPENSHIFT_PULL_SECRET_KEY_NAME)' /tmp/secret-pull-secret.yaml
+        yq e -i '.spec.data[0].remoteRef.key = env(OPENSHIFT_PULL_SECRET_KEY_REF)' /tmp/secret-pull-secret.yaml
+        yq e -i '.spec.secretStoreRef.name = env(SECRET_STORE_REF)' /tmp/secret-pull-secret.yaml
+        targetSecretName="$CLUSTER_NAME-pull-secret" yq e -i '.spec.target.name = env(targetSecretName)' /tmp/secret-pull-secret.yaml
+
+        # SSH Private Key
+        sshSecretName="$CLUSTER_NAME-ssh-private-key" yq e -i '.metadata.name = env(sshSecretName)' /tmp/secret-ssh-private-key.yaml
+        yq e -i '.metadata.namespace = env(CLUSTER_NAME)' /tmp/secret-ssh-private-key.yaml
+        yq e -i '.spec.data[0].secretKey = env(SSH_SECRET_KEY_NAME)' /tmp/secret-ssh-private-key.yaml
+        yq e -i '.spec.data[0].remoteRef.key = env(SSH_SECRET_KEY_REF)' /tmp/secret-ssh-private-key.yaml
+        yq e -i '.spec.secretStoreRef.name = env(SECRET_STORE_REF)' /tmp/secret-ssh-private-key.yaml
+        targetSecretName="$CLUSTER_NAME-ssh-private-key" yq e -i '.spec.target.name = env(targetSecretName)' /tmp/secret-ssh-private-key.yaml
+
+        cp secret-ssh-private-key.yaml secret-pull-secret.yaml secret-aws-creds.yaml $WORKSPACE
     - name: generate-install-config
       image: quay.io/marwan_attar_ibm/rhacm-install-install-config-generator
       env:
