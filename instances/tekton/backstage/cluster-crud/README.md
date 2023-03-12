@@ -33,3 +33,8 @@ Right now, the secrets generated in the respective secret creation steps within 
 
 Option 2 was chosen. Please note the although the install config is a secret it does NOT contain sensitive information. And as such can be made a normal K8 secret. Since it is generated on the fly it cannot be made an External Secret anyhow. **Note this has since been done. The logic is baked in the "secrets-generator" step of the Tekton task.**
 
+
+## TODO
+
+Use the kustomize framework here: https://stackoverflow.com/questions/71948193/replace-contents-of-an-item-in-a-list-using-kustomize
+
