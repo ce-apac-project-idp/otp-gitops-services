@@ -7,7 +7,7 @@ spec:
   data:
   - secretKey: gitCliPrivateKey
     remoteRef: 
-      key: a272585d-a006-b080-2c31-1c4a4dc49c91
+      key: ef0caad4-3dec-de31-f32f-434ddabf2dfc
   refreshInterval: 24h0m0s
   secretStoreRef:
     name: cluster
