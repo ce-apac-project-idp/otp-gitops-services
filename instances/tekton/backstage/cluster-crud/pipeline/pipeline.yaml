@@ -1,0 +1,47 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: cluster-crud
+  namespace: tekton
+  labels:
+    build-name: cluster-crud
+spec:
+  description: |
+   This pipeline will be triggered in the event a new cluster is to be provisioned.  
+  params:
+  - name: cluster-name
+    type: string
+    description: Name of cluster.
+  - name: region
+    type: string
+    description: Region cluster resides within.
+  - name: cloud
+    type: string
+    description: Chosen cloud provider to host the cluster.
+  - name: version
+    type: string
+    description: OpenShift version.
+  workspaces:
+  - name: shared-data
+    description: |
+      Shared, persisted data for the tasks constituting this pipeline.
+  tasks:
+  - name: generate-resources
+    taskRef:
+      name: generate-resources
+    workspaces:
+    - name: output
+      workspace: shared-data
+    params:
+    - name: clusterName
+      value: $(params.cluster-name)
+    - name: region
+      value: $(params.region)
+    - name: cloud
+      value: $(params.cloud)
+    - name: configMapName
+      value: rhacm-aws-install-config-configmap # This has to match with the configmap name defined in the "cluster-crud" subdirectory within the configmaps directory of the Infra project. Change it here if necessary.
+    - name: version
+      value: $(params.version)
+    - name: resourcesNamespace # This has to match the name of the namespace defined in the "cluster-crud" subdirectory within the namespaces directory of the Infra project. Change it here if necessary.
+      value: scratchspace
