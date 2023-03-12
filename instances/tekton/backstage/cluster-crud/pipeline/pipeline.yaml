@@ -50,6 +50,7 @@ spec:
     - name: resourcesNamespace # This has to match the name of the namespace defined in the "cluster-crud" subdirectory within the namespaces directory of the Infra project. Change it here if necessary.
       value: aws-resources
   - name: cluster-deploy
+    runAfter: ["generate-resources"]
     taskRef:
       name: cluster-deploy
     workspaces:
