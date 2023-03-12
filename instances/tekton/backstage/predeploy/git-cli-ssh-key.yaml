@@ -1,0 +1,23 @@
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: git-cli-ssh-private-key
+  namespace: tekton
+spec:
+  data:
+  - secretKey: gitCliPrivateKey
+    remoteRef: 
+      key: d99c6521-a0b9-414b-14f0-0e6390b0a5bf
+  refreshInterval: 24h0m0s
+  secretStoreRef:
+    name: cluster
+    kind: ClusterSecretStore
+  target:
+    name: git-cli-ssh-private-key
+    creationPolicy: Owner
+    template:
+      type: Opaque
+      data:
+        ssh-privatekey: |-
+          {{ .gitCliPrivateKey | toString }}
+  

@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: git-data
+data:
+  username: backstage-bot
+  email: backstage-bot@ibm.com
+  repo:  git@github.com:ce-apac-project-idp/otp-gitops-apps.git
