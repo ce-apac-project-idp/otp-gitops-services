@@ -1,0 +1,127 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: cluster-deploy
+spec:
+  description: >-
+
+    Git command that needs to be run can be passed as a script to
+    the task. This task needs authentication to git in order to push
+    after the git operation.
+
+  workspaces:
+    - name: source 
+      description: Source (working) directory 
+
+    - name: gitops
+      description: Configmap containing GitOps information housed here.
+
+    - name: input
+      optional: true
+      description: |
+        An optional workspace that contains the files that need to be added to git. You can
+        access the workspace from your script using `$(workspaces.input.path)`, for instance:
+
+          cp $(workspaces.input.path)/file_that_i_want .
+          git add file_that_i_want
+          # etc
+
+    - name: ssh-directory
+      optional: true
+      description: |
+        A .ssh directory with private key, known_hosts, config, etc. Copied to
+        the user's home before git commands are executed. Used to authenticate
+        with the git remote when performing the clone. Binding a Secret to this
+        Workspace is strongly recommended over other volume types.
+
+    - name: basic-auth
+      optional: true
+      description: |
+        A Workspace containing a .gitconfig and .git-credentials file. These
+        will be copied to the user's home before any git commands are run. Any
+        other files in this Workspace are ignored. It is strongly recommended
+        to use ssh-directory over basic-auth whenever possible and to bind a
+        Secret to this Workspace over other volume types.
+  params:
+    - name: userHome 
+      description: |
+        Absolute path to the user's home directory. Set this explicitly if you are running the image as a non-root user or have overridden
+        the gitInitImage param with an image containing custom user configuration.
+      type: string
+      default: "/home/deployer"
+
+    - name: verbose 
+      description: Log the commands that are executed during `git-clone`'s operation.
+      type: string
+      default: "true"
+
+  results:
+    - name: commit
+      description: The precise commit SHA after the git operation.
+
+  steps:
+    - name: gitops
+      image: quay.io/marwan_attar_ibm/idp-image-deployer 
+      workingDir: $(workspaces.source.path)
+      env:
+      - name: HOME
+        value: $(params.userHome)
+      - name: VERBOSE
+        value: $(params.verbose)
+      - name: WORKSPACE_OUTPUT_PATH
+        value: $(workspaces.output.path)
+      - name: WORKSPACE_SSH_DIRECTORY_BOUND
+        value: $(workspaces.ssh-directory.bound)
+      - name: WORKSPACE_SSH_DIRECTORY_PATH
+        value: $(workspaces.ssh-directory.path)
+      - name: WORKSPACE_BASIC_AUTH_DIRECTORY_BOUND
+        value: $(workspaces.basic-auth.bound)
+      - name: WORKSPACE_BASIC_AUTH_DIRECTORY_PATH
+        value: $(workspaces.basic-auth.path)
+      script: |
+        #!/usr/bin/env bash
+        set -eu
+
+        if [ "${VERBOSE}" = "true" ] ; then
+          set -x
+        fi
+
+        if [ "${WORKSPACE_BASIC_AUTH_DIRECTORY_BOUND}" = "true" ] ; then
+          cp "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.git-credentials" "${HOME}/.git-credentials"
+          cp "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.gitconfig" "${HOME}/.gitconfig"
+          chmod 400 "${HOME}/.git-credentials"
+          chmod 400 "${PARAM_USER_HOME}/.gitconfig"
+        fi
+
+        if [ "${WORKSPACE_SSH_DIRECTORY_BOUND}" = "true" ] ; then
+          cp -R "${WORKSPACE_SSH_DIRECTORY_PATH}" "${HOME}"/.ssh
+          chmod 700 "${HOME}"/.ssh
+          chmod -R 400 "${HOME}"/.ssh/*
+        fi
+
+        
+        # We create a directory named after the cluster, which can be obtained from the namespace field.
+        clusterName=$(yq '.metadata.namespace' $WORKSPACE_OUTPUT_PATH/cluster-deployment.yaml)
+
+        username=`cat /workspace/gitops/username`
+        email=`cat /workspace/gitops/email`
+        git config --global user.email "$email"
+        git config --global user.name "$username"
+
+        appsRepo=`cat /workspace/gitops/repo`
+        git clone $appsRepo
+        cd otp-gitops-apps
+        mkdir -p idp/developers/clusters/$clusterName 
+        cp /WORKSPACE_OUTPUT_PATH/*.yaml idp/developers/clusters/$clusterName
+        git add idp/developers/clusters/$clusterName # Don't do git add ".", in the off chance someone else was pushing to this repo at the same time
+        git commit -m "Cluster with name $clusterName created"
+        git push 
+
+        RESULT_SHA="$(git rev-parse HEAD | tr -d '\n')"
+        EXIT_CODE="$?"
+        if [ "$EXIT_CODE" != 0 ]
+        then
+          exit $EXIT_CODE
+        fi
+        # Make sure we don't add a trailing newline to the result!
+        printf "%s" "$RESULT_SHA" > "$(results.commit.path)"
