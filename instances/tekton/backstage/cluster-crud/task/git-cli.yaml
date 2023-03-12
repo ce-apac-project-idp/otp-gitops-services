@@ -109,11 +109,11 @@ spec:
         git config --global user.name "$username"
 
         repo=`cat /workspace/gitops/clustersRepo`
-        whoami
-        cat /home/deployer/.ssh/id_rsa
-        ssh -vT git@github.com
-        sleep 1000
-        git clone $repo
+        #whoami
+        #cat /home/deployer/.ssh/id_rsa
+        #ssh -vT git@github.com
+        #sleep 1000
+        GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" git clone $repo
         cd otp-gitops-clusters
         mkdir -p idp/developers/clusters/$clusterName 
         cp /WORKSPACE_OUTPUT_PATH/*.yaml idp/developers/clusters/$clusterName
