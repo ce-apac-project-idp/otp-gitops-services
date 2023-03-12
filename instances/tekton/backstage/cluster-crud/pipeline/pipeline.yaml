@@ -25,6 +25,10 @@ spec:
   - name: shared-data
     description: |
       Shared, persisted data for the tasks constituting this pipeline.
+  - name: ssh-credentials
+    description: SSH credentials required to perform git commands against select repositories from the Gitops organisation.
+  - name: git-configmap
+    description: Registry related information housed within said configmap. 
   tasks:
   - name: generate-resources
     taskRef:
@@ -45,3 +49,16 @@ spec:
       value: $(params.version)
     - name: resourcesNamespace # This has to match the name of the namespace defined in the "cluster-crud" subdirectory within the namespaces directory of the Infra project. Change it here if necessary.
       value: aws-resources
+  - name: cluster-deploy
+    taskRef:
+      name: cluster-deploy
+    workspaces:
+    - name: output
+      workspace: shared-data
+    - name: ssh-directory
+      workspace: ssh-credentials
+    - name: gitops
+      workspace: git-configmap
+    params:
+    - name: verbose
+      value: true
