@@ -109,6 +109,7 @@ spec:
         git config --global user.name "$username"
 
         repo=`cat /workspace/gitops/clustersRepo`
+        sleep 1000
         git clone $repo
         cd otp-gitops-clusters
         mkdir -p idp/developers/clusters/$clusterName 
