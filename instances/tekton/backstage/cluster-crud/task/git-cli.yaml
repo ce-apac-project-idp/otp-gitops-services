@@ -108,10 +108,10 @@ spec:
         git config --global user.email "$email"
         git config --global user.name "$username"
 
-        appsRepo=`cat /workspace/gitops/repo`
+        repo=`cat /workspace/gitops/clustersRepo`
         sleep 1000
-        git clone $appsRepo
-        cd otp-gitops-apps
+        git clone $repo
+        cd otp-gitops-clusters
         mkdir -p idp/developers/clusters/$clusterName 
         cp /WORKSPACE_OUTPUT_PATH/*.yaml idp/developers/clusters/$clusterName
         git add idp/developers/clusters/$clusterName # Don't do git add ".", in the off chance someone else was pushing to this repo at the same time

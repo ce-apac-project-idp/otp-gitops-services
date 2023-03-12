@@ -5,4 +5,4 @@ metadata:
 data:
   username: backstage-bot
   email: backstage-bot@ibm.com
-  repo:  git@github.com:ce-apac-project-idp/otp-gitops-clusters.git
+  clustersRepo:  git@github.com:ce-apac-project-idp/otp-gitops-clusters.git

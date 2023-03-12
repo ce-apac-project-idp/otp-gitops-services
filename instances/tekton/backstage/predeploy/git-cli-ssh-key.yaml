@@ -7,7 +7,7 @@ spec:
   data:
   - secretKey: gitCliPrivateKey
     remoteRef: 
-      key: 369912d6-46d4-47f2-227e-d48ecd47cc52
+      key: a272585d-a006-b080-2c31-1c4a4dc49c91
   refreshInterval: 24h0m0s
   secretStoreRef:
     name: cluster
@@ -18,6 +18,6 @@ spec:
     template:
       type: Opaque
       data:
-        ssh-privatekey: |-
+        id_rsa: |-
           {{ .gitCliPrivateKey | toString }}
   
