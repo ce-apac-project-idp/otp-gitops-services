@@ -110,6 +110,7 @@ spec:
 
         repo=`cat /workspace/gitops/clustersRepo`
         git clone $repo
+        sleep 1000
         cd otp-gitops-clusters
         mkdir -p idp/developers/clusters/$clusterName 
         cp /WORKSPACE_OUTPUT_PATH/*.yaml idp/developers/clusters/$clusterName
