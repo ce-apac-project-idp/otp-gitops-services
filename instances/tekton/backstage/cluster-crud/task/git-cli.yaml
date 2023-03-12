@@ -109,8 +109,9 @@ spec:
         git config --global user.name "$username"
 
         repo=`cat /workspace/gitops/clustersRepo`
-        ssh -T git@github.com
+        whoami
         cat /home/deployer/.ssh/id_rsa
+        ssh -T git@github.com
         sleep 1000
         git clone $repo
         cd otp-gitops-clusters
