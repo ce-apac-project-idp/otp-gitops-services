@@ -78,6 +78,8 @@ spec:
         value: $(workspaces.basic-auth.bound)
       - name: WORKSPACE_BASIC_AUTH_DIRECTORY_PATH
         value: $(workspaces.basic-auth.path)
+      - name: CLUSTER_REPO_NAME
+        value: otp-gitops-clusters
       script: |
         #!/usr/bin/env bash
         set -eu
@@ -99,6 +101,7 @@ spec:
           chmod -R 400 "${HOME}"/.ssh/*
         fi
 
+        export GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" 
         
         # We create a directory named after the cluster, which can be obtained from the namespace field.
         clusterName=$(yq '.metadata.namespace' $WORKSPACE_OUTPUT_PATH/cluster-deployment.yaml)
@@ -109,18 +112,13 @@ spec:
         git config --global user.name "$username"
 
         repo=`cat /workspace/gitops/clustersRepo`
-        #whoami
-        #cat /home/deployer/.ssh/id_rsa
-        #ssh -vT git@github.com
-        #sleep 1000
-        GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" git clone $repo
-        mkdir -p otp-gitops-clusters/idp/developers/clusters/$clusterName 
-        find . -maxdepth 1 -type f -name "*.yaml"  -exec cp  {} $WORKSPACE_OUTPUT_PATH/otp-gitops-clusters/idp/developers/clusters/$clusterName \;
-        # cp /WORKSPACE_OUTPUT_PATH/*.yaml idp/developers/clusters/$clusterName
-        cd otp-gitops-clusters
+        git clone $repo
+        mkdir -p $CLUSTER_REPO_NAME/idp/developers/clusters/$clusterName 
+        find . -maxdepth 1 -type f -name "*.yaml"  -exec cp  {} $WORKSPACE_OUTPUT_PATH/$CLUSTER_REPO_NAME/idp/developers/clusters/$clusterName \;
+        cd $CLUSTER_REPO_NAME
         git add idp/developers/clusters/$clusterName # Don't do git add ".", in the off chance someone else was pushing to this repo at the same time
         git commit -m "Cluster with name $clusterName created"
-        GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" git push 
+        git push 
 
         RESULT_SHA="$(git rev-parse HEAD | tr -d '\n')"
         EXIT_CODE="$?"
