@@ -314,7 +314,8 @@ spec:
         yq e -i '.metadata.annotations."helm.sh/hook-weight" = "460"' /tmp/machinepool.yaml
 
         # We need to be adding the sync waves as annotations
-        cp /tmp/machinepool.yaml $WORKSPACE
+        # Encountered some issues with this bad boy so will leave as is for now.
+        # cp /tmp/machinepool.yaml $WORKSPACE
     - name: managedcluster-generation
       image: quay.io/marwan_attar_ibm/rhacm-install-managedcluster-generator
       env:
