@@ -114,7 +114,7 @@ spec:
         #ssh -vT git@github.com
         #sleep 1000
         GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" git clone $repo
-        mkdir -p idp/developers/clusters/$clusterName 
+        mkdir -p otp-gitops-clusters/idp/developers/clusters/$clusterName 
         find . -maxdepth 1 -type f -name "*.yaml"  -exec cp  {} $WORKSPACE_OUTPUT_PATH/otp-gitops-clusters/idp/developers/clusters/$clusterName \;
         # cp /WORKSPACE_OUTPUT_PATH/*.yaml idp/developers/clusters/$clusterName
         git add idp/developers/clusters/$clusterName # Don't do git add ".", in the off chance someone else was pushing to this repo at the same time
