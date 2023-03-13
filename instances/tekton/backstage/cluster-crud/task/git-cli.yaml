@@ -117,7 +117,7 @@ spec:
         mkdir -p otp-gitops-clusters/idp/developers/clusters/$clusterName 
         find . -maxdepth 1 -type f -name "*.yaml"  -exec cp  {} $WORKSPACE_OUTPUT_PATH/otp-gitops-clusters/idp/developers/clusters/$clusterName \;
         # cp /WORKSPACE_OUTPUT_PATH/*.yaml idp/developers/clusters/$clusterName
-        git add idp/developers/clusters/$clusterName # Don't do git add ".", in the off chance someone else was pushing to this repo at the same time
+        git add otp-gitops-clusters/idp/developers/clusters/$clusterName # Don't do git add ".", in the off chance someone else was pushing to this repo at the same time
         git commit -m "Cluster with name $clusterName created"
         git push 
 
