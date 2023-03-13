@@ -120,7 +120,7 @@ spec:
         cd otp-gitops-clusters
         git add idp/developers/clusters/$clusterName # Don't do git add ".", in the off chance someone else was pushing to this repo at the same time
         git commit -m "Cluster with name $clusterName created"
-        git push 
+        GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" git push 
 
         RESULT_SHA="$(git rev-parse HEAD | tr -d '\n')"
         EXIT_CODE="$?"
