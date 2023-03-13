@@ -101,6 +101,7 @@ spec:
           chmod -R 400 "${HOME}"/.ssh/*
         fi
 
+        # This should be removed at some point in favour of specifying the known_hosts in the ExternalSecrets as such: https://artifacthub.io/packages/tekton-task/tekton-catalog-tasks/git-cli#using-ssh-credentials
         export GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" 
         
         # We create a directory named after the cluster, which can be obtained from the namespace field.
@@ -115,6 +116,9 @@ spec:
         git clone $repo
         mkdir -p $CLUSTER_REPO_NAME/idp/developers/clusters/$clusterName 
         find . -maxdepth 1 -type f -name "*.yaml"  -exec cp  {} $WORKSPACE_OUTPUT_PATH/$CLUSTER_REPO_NAME/idp/developers/clusters/$clusterName \;
+
+        # This step is important. Must be in the correct context (.git directory should be present at your current wrking directory or any higher level directories).
+        # There is no .git folder in this directory or any other directories above. Hence the git add command will fail if the cd below is not performed.
         cd $CLUSTER_REPO_NAME
         git add idp/developers/clusters/$clusterName # Don't do git add ".", in the off chance someone else was pushing to this repo at the same time
         git commit -m "Cluster with name $clusterName created"
