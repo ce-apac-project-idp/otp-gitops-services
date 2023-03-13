@@ -13,6 +13,12 @@ The configmap and secrets provided in this directory provide the context necessa
 2) The git-cli task does NOT enforce host checking prior to performing the git related commands. Ie, git push or git add. It is best to include the known hosts as a configuration present in the ExternalSecret as specified [here](https://superuser.com/questions/523099/linux-copy-all-files-by-extension-to-single-dirrectory) (known_hosts field). The temporary workaround involves setting the GIT_SSH_COMMAND to a value such that strictHostKeyChecking is disabled. The command is provided below.
 
 
+'''
+export GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" 
+'''
+
+Alternatively include this prior to performing the git commmand (in the same line) if you wish not to export variables.
+
 ## Caveats
 
 For the love of god, do NOT:
