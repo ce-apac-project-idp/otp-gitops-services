@@ -36,5 +36,8 @@ Option 2 was chosen. Please note the although the install config is a secret it 
 
 ## TODO
 
-Use the kustomize framework here: https://stackoverflow.com/questions/71948193/replace-contents-of-an-item-in-a-list-using-kustomize
+1) Use the kustomize framework here: https://stackoverflow.com/questions/71948193/replace-contents-of-an-item-in-a-list-using-kustomize
+2) Include known_hosts in the External secrets for git-cli-ssh as opposed to disabling strict host key checking via the "GIT_SSH_COMMAND" commmand. That was a cheap copout. More here: https://artifacthub.io/packages/tekton-task/tekton-catalog-tasks/git-cli#using-ssh-credentials
+
+
 
