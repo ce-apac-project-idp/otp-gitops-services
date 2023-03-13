@@ -49,8 +49,8 @@ spec:
         yq e -i '.metadata.annotations."kubernetes.io/metadata.name" = env(CLUSTER_NAME)' /tmp/namespace.yaml
 
         # Annotations - Figure out a way to avoid the hardcoding of sync waves later on
-        yq e -i '.metadata.annotations."argocd.argoproj.io/sync-wave" = "350"' /tmp/namespace.yaml
-        yq e -i '.metadata.annotations."helm.sh/hook-weight" = "350"' /tmp/namespace.yaml
+        yq e -i '.metadata.annotations."argocd.argoproj.io/sync-wave" = "450"' /tmp/namespace.yaml
+        yq e -i '.metadata.annotations."helm.sh/hook-weight" = "450"' /tmp/namespace.yaml
 
         cp /tmp/namespace.yaml $WORKSPACE
     - name: secret-generator
@@ -98,8 +98,8 @@ spec:
         yq e -i '.spec.secretStoreRef.name = env(SECRET_STORE_REF)' /tmp/secret-aws-creds.yaml
         targetSecretName="$CLUSTER_NAME-$PLATFORM_SECRET_SUFFIX" yq e -i '.spec.target.name = env(targetSecretName)' /tmp/secret-aws-creds.yaml
 
-        yq e -i '.metadata.annotations."argocd.argoproj.io/sync-wave" = "355"' /tmp/secret-aws-creds.yaml
-        yq e -i '.metadata.annotations."helm.sh/hook-weight" = "355"' /tmp/secret-aws-creds.yaml
+        yq e -i '.metadata.annotations."argocd.argoproj.io/sync-wave" = "455"' /tmp/secret-aws-creds.yaml
+        yq e -i '.metadata.annotations."helm.sh/hook-weight" = "455"' /tmp/secret-aws-creds.yaml
 
         # RedHat Pull Secret
         pullSecretName="$CLUSTER_NAME-$PULL_SECRET_SUFFIX" yq e -i '.metadata.name = env(pullSecretName)' /tmp/secret-pull-secret.yaml
@@ -109,8 +109,8 @@ spec:
         yq e -i '.spec.secretStoreRef.name = env(SECRET_STORE_REF)' /tmp/secret-pull-secret.yaml
         targetSecretName="$CLUSTER_NAME-$PULL_SECRET_SUFFIX" yq e -i '.spec.target.name = env(targetSecretName)' /tmp/secret-pull-secret.yaml
 
-        yq e -i '.metadata.annotations."argocd.argoproj.io/sync-wave" = "355"' /tmp/secret-pull-secret.yaml
-        yq e -i '.metadata.annotations."helm.sh/hook-weight" = "355"' /tmp/secret-pull-secret.yaml
+        yq e -i '.metadata.annotations."argocd.argoproj.io/sync-wave" = "455"' /tmp/secret-pull-secret.yaml
+        yq e -i '.metadata.annotations."helm.sh/hook-weight" = "455"' /tmp/secret-pull-secret.yaml
 
         # SSH Private Key
         sshSecretName="$CLUSTER_NAME-$SSH_SECRET_SUFFIX" yq e -i '.metadata.name = env(sshSecretName)' /tmp/secret-ssh-private-key.yaml
@@ -121,8 +121,8 @@ spec:
         targetSecretName="$CLUSTER_NAME-$SSH_SECRET_SUFFIX" yq e -i '.spec.target.name = env(targetSecretName)' /tmp/secret-ssh-private-key.yaml
 
 
-        yq e -i '.metadata.annotations."argocd.argoproj.io/sync-wave" = "355"' /tmp/secret-ssh-private-key.yaml
-        yq e -i '.metadata.annotations."helm.sh/hook-weight" = "355"' /tmp/secret-ssh-private-key.yaml
+        yq e -i '.metadata.annotations."argocd.argoproj.io/sync-wave" = "455"' /tmp/secret-ssh-private-key.yaml
+        yq e -i '.metadata.annotations."helm.sh/hook-weight" = "455"' /tmp/secret-ssh-private-key.yaml
 
         cp secret-ssh-private-key.yaml secret-pull-secret.yaml secret-aws-creds.yaml $WORKSPACE
     - name: generate-install-config
@@ -184,8 +184,8 @@ spec:
         yq e -i '.metadata.namespace = env(CLUSTER_NAME)' /tmp/install-config.yaml
         secretName="$CLUSTER_NAME-install-config" yq e -i '.metadata.name = env(secretName)' /tmp/install-config.yaml
 
-        yq e -i '.metadata.annotations."argocd.argoproj.io/sync-wave" = "355"' /tmp/install-config.yaml
-        yq e -i '.metadata.annotations."helm.sh/hook-weight" = "355"' /tmp/install-config.yaml   
+        yq e -i '.metadata.annotations."argocd.argoproj.io/sync-wave" = "455"' /tmp/install-config.yaml
+        yq e -i '.metadata.annotations."helm.sh/hook-weight" = "455"' /tmp/install-config.yaml   
 
         # This can be defined as an env variable in the Tekton task referencing the input workspace.
         cp /tmp/install-config.yaml $WORKSPACE
@@ -244,8 +244,8 @@ spec:
         sshSecretName=$CLUSTER_NAME-$SSH_SECRET_SUFFIX yq e -i '.spec.provisioning.sshPrivateKeySecretRef.name = env(sshSecretName)' /tmp/cluster-deployment.yaml
         pullSecretName=$CLUSTER_NAME-$PULL_SECRET_SUFFIX yq e -i '.spec.pullSecretRef.name = env(pullSecretName)' /tmp/cluster-deployment.yaml
 
-        yq e -i '.metadata.annotations."argocd.argoproj.io/sync-wave" = "360"' /tmp/cluster-deployment.yaml
-        yq e -i '.metadata.annotations."helm.sh/hook-weight" = "360"' /tmp/cluster-deployment.yaml  
+        yq e -i '.metadata.annotations."argocd.argoproj.io/sync-wave" = "460"' /tmp/cluster-deployment.yaml
+        yq e -i '.metadata.annotations."helm.sh/hook-weight" = "460"' /tmp/cluster-deployment.yaml  
 
         # TODO: ArgoCD Sync Wave Annotations!!!! This will not be defined at an ArgoApp level
         cp /tmp/cluster-deployment.yaml $WORKSPACE
@@ -275,8 +275,8 @@ spec:
         iamPolicyController=`yq '.data.klusterlet' rhacm-aws-cluster-crud-cmap.yaml | grep iamPolicyController |  cut -d "=" -f2 | awk '{print $1}'` yq e -i '.spec.iamPolicyController.enabled = env(iamPolicyController)' /tmp/klusteraddonconfig.yaml
         certPolicyController=`yq '.data.klusterlet' rhacm-aws-cluster-crud-cmap.yaml | grep certPolicyController |  cut -d "=" -f2 | awk '{print $1}'` yq e -i '.spec.certPolicyController.enabled = env(certPolicyController)' /tmp/klusteraddonconfig.yaml
 
-        yq e -i '.metadata.annotations."argocd.argoproj.io/sync-wave" = "360"' /tmp/klusteraddonconfig.yaml
-        yq e -i '.metadata.annotations."helm.sh/hook-weight" = "360"' /tmp/klusteraddonconfig.yaml 
+        yq e -i '.metadata.annotations."argocd.argoproj.io/sync-wave" = "460"' /tmp/klusteraddonconfig.yaml
+        yq e -i '.metadata.annotations."helm.sh/hook-weight" = "460"' /tmp/klusteraddonconfig.yaml 
         
         cp /tmp/klusteraddonconfig.yaml $WORKSPACE
 
@@ -310,8 +310,8 @@ spec:
         platformType=`yq '.data.compute' rhacm-aws-cluster-crud-cmap.yaml | grep rootVolume.type |  cut -d "=" -f2 | awk '{print $1}'` yq e -i '.spec.platform.aws.rootVolume.type = env(platformType)' /tmp/machinepool.yaml
         replicas=`yq '.data.compute' rhacm-aws-cluster-crud-cmap.yaml | grep replicas |  cut -d "=" -f2 | awk '{print $1}'` yq e -i '.spec.replicas = env(replicas)' /tmp/machinepool.yaml
 
-        yq e -i '.metadata.annotations."argocd.argoproj.io/sync-wave" = "360"' /tmp/machinepool.yaml
-        yq e -i '.metadata.annotations."helm.sh/hook-weight" = "360"' /tmp/machinepool.yaml
+        yq e -i '.metadata.annotations."argocd.argoproj.io/sync-wave" = "460"' /tmp/machinepool.yaml
+        yq e -i '.metadata.annotations."helm.sh/hook-weight" = "460"' /tmp/machinepool.yaml
 
         # We need to be adding the sync waves as annotations
         cp /tmp/machinepool.yaml $WORKSPACE
@@ -340,10 +340,10 @@ spec:
         # ConfigMap Params
         cloud=`yq '.data.managedCluster' rhacm-aws-cluster-crud-cmap.yaml| grep cloud |  cut -d "=" -f2 | awk '{print $1}'` yq e -i '.metadata.labels.cloud = env(cloud)' /tmp/managedcluster.yaml
 
-        yq e -i '.metadata.annotations."argocd.argoproj.io/sync-wave" = "370"' /tmp/managedcluster.yaml
-        yq e -i '.metadata.annotations."helm.sh/hook-weight" = "370"' /tmp/managedcluster.yaml
-        yq e -i '.metadata.annotations."argocd.argoproj.io/sync-wave" = "370"' /tmp/managedclusterinfo.yaml
-        yq e -i '.metadata.annotations."helm.sh/hook-weight" = "370"' /tmp/managedclusterinfo.yaml
+        yq e -i '.metadata.annotations."argocd.argoproj.io/sync-wave" = "470"' /tmp/managedcluster.yaml
+        yq e -i '.metadata.annotations."helm.sh/hook-weight" = "470"' /tmp/managedcluster.yaml
+        yq e -i '.metadata.annotations."argocd.argoproj.io/sync-wave" = "470"' /tmp/managedclusterinfo.yaml
+        yq e -i '.metadata.annotations."helm.sh/hook-weight" = "470"' /tmp/managedclusterinfo.yaml
 
         cp /tmp/managedcluster.yaml $WORKSPACE
         cp /tmp/managedclusterinfo.yaml $WORKSPACE
