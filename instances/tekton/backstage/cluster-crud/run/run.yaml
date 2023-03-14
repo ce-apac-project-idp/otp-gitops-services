@@ -1,0 +1,43 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: cluster-crud-dq0upe
+  namespace: tekton
+  labels:
+    app.kubernetes.io/instance: backstage-cluster-crud-pipeline
+    build-name: cluster-crud
+    tekton.dev/pipeline: cluster-crud
+spec:
+  params:
+    - name: cluster-name
+      value: govtech
+    - name: region
+      value: ap-southeast-1
+    - name: cloud
+      value: aws
+    - name: version
+      value: '4.9'
+  pipelineRef:
+    name: cluster-crud
+  serviceAccountName: pipeline
+  timeout: 1h0m0s
+  workspaces:
+    - name: shared-data
+      volumeClaimTemplate:
+        metadata:
+          creationTimestamp: null
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
+          storageClassName: ocs-storagecluster-cephfs
+          volumeMode: Filesystem
+        status: {}
+    - name: ssh-credentials
+      secret:
+        secretName: git-cli-ssh-private-key
+    - configMap:
+        name: git-data
+      name: git-configmap
