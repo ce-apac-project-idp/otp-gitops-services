@@ -1,0 +1,14 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: EventListener
+metadata:
+  name: cluster-crud
+  namespace: tekton
+spec:
+  serviceAccountName: pipeline
+  triggers:
+    - bindings:
+        - kind: TriggerBinding
+          ref: cluster-crud-binding
+      template:
+        ref: cluster-crud-tt
+      name: cluster-crud

@@ -1,0 +1,15 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerBinding
+metadata:
+  name: cluster-crud-binding
+  namespace: tekton
+spec:
+  params:
+    - name: clusterName
+      value: $(body.clusterName)
+    - name: region
+      value: $(body.region)
+    - name: cloud
+      value: $(body.cloud)
+    - name: version
+      value: $(body.version)
