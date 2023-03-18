@@ -6,3 +6,5 @@ data:
   username: backstage-bot
   email: backstage-bot@ibm.com
   clustersRepo:  git@github.com:ce-apac-project-idp/otp-gitops-clusters.git
+  parentRepo: git@github.com:ce-apac-project-idp/otp-gitops.git
+  appsRepo: git@github.com:ce-apac-project-idp/otp-gitops-apps.git
