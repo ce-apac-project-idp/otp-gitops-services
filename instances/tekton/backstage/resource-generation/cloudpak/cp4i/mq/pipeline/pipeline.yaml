@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: resource-submission
+  name: mq-resource-submission
   namespace: tekton
   labels:
     build-name: resource-submission
