@@ -49,9 +49,6 @@ spec:
       description: Log the commands that are executed during `git-clone`'s operation.
       type: string
       default: "true"
-    - name: clusterName 
-      description: The clusterName to deploy the resources too.
-      type: string
     - name: clusterName # Use this eventually
       type: string
       description: Input via Backstage. This is the name of the cluster. Must be globally unique.
