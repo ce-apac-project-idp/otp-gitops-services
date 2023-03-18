@@ -117,7 +117,7 @@ spec:
         # Maxdepth is important here. We only want to be copying the YAMLS in the current working directory.
         for i in `find . -maxdepth 1 -name "*.yaml" -type f`; do
           echo "---" >> $PARENT_REPO_NAME/spokeclusters/idp/developers/clusters/$CLUSTER_NAME/kustomization.yaml
-          cat $i >> tmp/resources.yaml
+          cat $i >> $PARENT_REPO_NAME/spokeclusters/idp/developers/clusters/$CLUSTER_NAME/kustomization.yaml
         done
         
         # This step is important. Must be in the correct context (.git directory should be present at your current wrking directory or any higher level directories).
