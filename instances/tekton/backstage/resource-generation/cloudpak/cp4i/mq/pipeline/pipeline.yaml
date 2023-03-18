@@ -50,8 +50,7 @@ spec:
     - name: gitops
       workspace: git-configmap
     params:
-    - name: clusterName
-      value: $(params.clusterName)
-    params:
     - name: verbose
       value: "true"
+    - name: clusterName
+      value: $(params.clusterName)
