@@ -12,10 +12,10 @@ spec:
       type: string
       description: Single Instance or NativeHA.
       default: false
-    - name: storage
+    - name: persistence
       type: string
       description: Persistent or ephemeral
-      default: ephemeral
+      default: false
   steps:
     - name: mq-generation
       image: quay.io/marwan_attar_ibm/cp4i_mq_generation
