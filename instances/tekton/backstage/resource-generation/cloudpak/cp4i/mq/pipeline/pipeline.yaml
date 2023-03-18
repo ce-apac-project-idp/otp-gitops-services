@@ -54,4 +54,4 @@ spec:
       value: $(params.clusterName)
     params:
     - name: verbose
-      value: true
+      value: "true"
