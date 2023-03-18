@@ -117,6 +117,7 @@ spec:
 
         # Maxdepth is important here. We only want to be copying the YAMLS in the current working directory.
         for i in `find . -maxdepth 1 -name "*.yaml" -type f`; do
+          sed -i -e '$a\' $PARENT_REPO_NAME/0-bootstrap/spokeclusters/idp/developers/clusters/$CLUSTER_NAME/kustomization.yaml
           echo "---" >> $PARENT_REPO_NAME/0-bootstrap/spokeclusters/idp/developers/clusters/$CLUSTER_NAME/kustomization.yaml
           cat $i >> $PARENT_REPO_NAME/0-bootstrap/spokeclusters/idp/developers/clusters/$CLUSTER_NAME/kustomization.yaml
         done
