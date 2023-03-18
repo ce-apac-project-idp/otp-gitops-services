@@ -52,6 +52,7 @@ spec:
     - name: clusterName
       type: string
       description: Input via Backstage. This is the name of the cluster. Must be globally unique.
+      default: "default"
   results:
     - name: commit
       description: The precise commit SHA after the git operation.
