@@ -1,0 +1,13 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerBinding
+metadata:
+  name: mq-create-binding
+  namespace: tekton
+spec:
+  params:
+    - name: highAvailability
+      value: $(body.highAvailability)
+    - name: persistence
+      value: $(body.persistence)
+    - name: clusterName
+      value: $(body.clusterName)

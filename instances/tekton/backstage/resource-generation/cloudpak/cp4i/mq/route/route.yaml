@@ -1,0 +1,16 @@
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: mq-create
+  namespace: tekton
+  labels:
+    app.kubernetes.io/managed-by: EventListener
+    app.kubernetes.io/part-of: Triggers
+    eventlistener: mq-create
+spec:
+  to:
+    kind: Service
+    name: el-mq-create
+  tls: null
+  port:
+    targetPort: http-listener
