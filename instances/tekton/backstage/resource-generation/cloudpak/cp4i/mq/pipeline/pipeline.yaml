@@ -38,8 +38,8 @@ spec:
       value: $(params.highAvailability)
     - name: persistence
       value: $(params.persistence)
-  - name: cluster-deploy
-    runAfter: ["generate-resources"]
+  - name: resource-deploy
+    runAfter: ["generate-mq"]
     taskRef:
       name: resource-deploy
     workspaces:
