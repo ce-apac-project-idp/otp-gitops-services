@@ -11,11 +11,11 @@ spec:
     - name: highAvailability
       type: string
       description: Single Instance or NativeHA.
-      default: false
+      default: "false"
     - name: persistence
       type: string
       description: Persistent or ephemeral
-      default: false
+      default: "false"
   steps:
     - name: mq-generation
       image: quay.io/marwan_attar_ibm/cp4i_mq_generation
