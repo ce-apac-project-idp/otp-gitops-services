@@ -112,13 +112,13 @@ spec:
         repo=`cat /workspace/gitops/parentRepo`
         git clone $repo
 
-        # Refer to the README given in PARENT_REPO/spokecluters/idp/developers. 
+        # Refer to the README given in PARENT_REPO/0-bootstrap/spokecluters/idp/developers. 
         # This is the fallback strategy.
 
         # Maxdepth is important here. We only want to be copying the YAMLS in the current working directory.
         for i in `find . -maxdepth 1 -name "*.yaml" -type f`; do
-          echo "---" >> $PARENT_REPO_NAME/spokeclusters/idp/developers/clusters/$CLUSTER_NAME/kustomization.yaml
-          cat $i >> $PARENT_REPO_NAME/spokeclusters/idp/developers/clusters/$CLUSTER_NAME/kustomization.yaml
+          echo "---" >> $PARENT_REPO_NAME/0-bootstrap/spokeclusters/idp/developers/clusters/$CLUSTER_NAME/kustomization.yaml
+          cat $i >> $PARENT_REPO_NAME/0-bootstrap/spokeclusters/idp/developers/clusters/$CLUSTER_NAME/kustomization.yaml
         done
         
         # This step is important. Must be in the correct context (.git directory should be present at your current wrking directory or any higher level directories).
