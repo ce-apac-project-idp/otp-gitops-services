@@ -19,7 +19,7 @@ spec:
         params:
           - name: highAvailability
             value: $(tt.params.highAvailability)
-          - name: region
+          - name: persistence
             value: $(tt.params.persistence)
           - name: clusterName
             value: $(tt.params.clusterName)
