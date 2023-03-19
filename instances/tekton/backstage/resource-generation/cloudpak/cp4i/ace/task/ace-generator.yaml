@@ -1,0 +1,50 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: generate-ace
+  namespace: tekton
+spec:
+  workspaces:
+    - description: Output workspace.
+      name: output
+  params:
+    - name: gitRepo
+      type: string
+      description: Location of Repo housing BAR and other artefacts.
+      default: "false"
+    - name: barfile
+      type: string
+      description: Name of barfile. Assuming it is lying in the ROOT directory.
+      default: "false"
+    - name: clusterName
+      type: string
+      description: Where this ACE app will be deployed to.
+  steps:
+    - name: ace-generation
+      image: quay.io/marwan_attar_ibm/cp4i_ace_generation
+      env:
+      - name: WORKSPACE
+        value: "$(workspaces.output.path)"
+      - name: GIT_REPO
+        value: "$(params.gitRepo)"
+      - name: BAR_FILE
+        value: "$(params.barfile)"
+      - name: CLUSTER_NAME
+        value: "$(params.clusterName)"
+      script:  |
+
+        ## TODO: We are depending on global uniqueness given through the cluster name parameter. Enforce check here.
+        # Essentially, there should not be any other namespaces created in the Hub cluster with the same name.
+        cd /tmp
+
+        sendMeLocation="$GIT_REPO/$BAR_FILE" yq e -i '.spec.barURL = env(sendMeLocation)' /tmp/ace.yaml
+        yq e -i '.metadata.namespace = env(CLUSTER_NAME)' /tmp/ace.yaml
+        # TODO: There should be some parsing logic, and this is a future task. 
+        # For purposes of demonstration however this will not be done.
+        cp /tmp/ace.yaml $WORKSPACE
+    - name: print-out
+      image: quay.io/marwan_attar_ibm/rhacm-install-cluster-deployment-generator
+      script: |
+        #!/usr/bin/env bash
+        ls -ltr /workspace/output
+        find /workspace/output -type f -exec cat {} \;

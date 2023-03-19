@@ -1,0 +1,58 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: ace-resource-submission
+  namespace: tekton
+  labels:
+    build-name: ace-resource-submission
+spec:
+  description: |
+   This pipeline will be triggered in the event an ACE resource ought to be committed to a cluster.  
+  params:
+  - name: gitRepo
+    type: string
+    description: Git Repo housing the BAR.
+  - name: barfile
+    type: string
+    description: Name of barfile in Git Repo ASSUMING it is in root directory.
+  - name: clusterName
+    type: string
+    description: The name of the cluster to which ACE should be deployed.
+  workspaces:
+  - name: shared-data
+    description: |
+      Shared, persisted data for the tasks constituting this pipeline.
+  - name: ssh-credentials
+    description: SSH credentials required to perform git commands against select repositories from the Gitops organisation.
+  - name: git-configmap
+    description: Registry related information housed within said configmap. 
+  tasks:
+  - name: generate-ace
+    taskRef:
+      name: generate-ace
+    workspaces:
+    - name: output
+      workspace: shared-data
+    params:
+    - name: gitRepo
+      value: $(params.gitRepo)
+    - name: barfile
+      value: $(params.barfile)
+    - name: clusterName
+      value: $(params.clusterName)
+  - name: resource-deploy
+    runAfter: ["generate-ace"]
+    taskRef:
+      name: resource-deploy
+    workspaces:
+    - name: output
+      workspace: shared-data
+    - name: ssh-directory
+      workspace: ssh-credentials
+    - name: gitops
+      workspace: git-configmap
+    params:
+    - name: verbose
+      value: "true"
+    - name: clusterName
+      value: $(params.clusterName)
