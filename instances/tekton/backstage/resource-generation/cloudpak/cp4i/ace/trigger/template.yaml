@@ -1,0 +1,49 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerTemplate
+metadata:
+  name: ace-create-tt
+  namespace: tekton
+spec:
+  params:
+    - name: gitRepo
+    - name: barfile
+    - name: clusterName
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: ace-create-pipeline-run-
+        annotations:
+          argocd.argoproj.io/compare-options: IgnoreExtraneous
+      spec:
+        params:
+          - name: gitRepo
+            value: $(tt.params.gitRepo)
+          - name: barfile
+            value: $(tt.params.barfile)
+          - name: clusterName
+            value: $(tt.params.clusterName)
+        pipelineRef:
+          name: ace-resource-submission
+        serviceAccountName: pipeline
+        timeout: 1h0m0s
+        workspaces:
+          - name: shared-data
+            volumeClaimTemplate:
+              metadata:
+                creationTimestamp: null
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: 1Gi
+                storageClassName: ocs-storagecluster-cephfs
+                volumeMode: Filesystem
+              status: {}
+          - name: ssh-credentials
+            secret:
+              secretName: git-cli-ssh-private-key
+          - configMap:
+              name: git-data
+            name: git-configmap

@@ -1,0 +1,13 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerBinding
+metadata:
+  name: ace-create-binding
+  namespace: tekton
+spec:
+  params:
+    - name: gitRepo
+      value: $(body.gitRepo)
+    - name: barfile
+      value: $(body.barfile)
+    - name: clusterName
+      value: $(body.clusterName)
