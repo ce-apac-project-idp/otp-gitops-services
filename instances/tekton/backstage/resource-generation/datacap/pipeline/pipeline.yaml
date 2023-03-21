@@ -1,0 +1,38 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: datacap-resource-submission
+  namespace: tekton
+  labels:
+    build-name: datacap-submission
+spec:
+  description: |
+   This pipeline will be triggered in the event an MQ resource ought to be committed to a cluster.  
+  params:
+  - name: cloud
+    type: string
+    description: Cloud
+  - name: region
+    type: string
+    description: Location
+  - name: version
+    type: string
+    description: Version
+  workspaces:
+  - name: shared-data
+    description: |
+      Shared, persisted data for the tasks constituting this pipeline.
+  tasks:
+  - name: generate-datacap
+    taskRef:
+      name: generate-datacap
+    workspaces:
+    - name: output
+      workspace: shared-data
+    params:
+    - name: cloud
+      value: $(params.cloud)
+    - name: region
+      value: $(params.region)
+    - name: version
+      value: $(params.version)

@@ -1,0 +1,14 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: EventListener
+metadata:
+  name: datacap-create
+  namespace: tekton
+spec:
+  serviceAccountName: pipeline
+  triggers:
+    - bindings:
+        - kind: TriggerBinding
+          ref: datacap-create-binding
+      template:
+        ref: datacap-create-tt
+      name: datacap-create

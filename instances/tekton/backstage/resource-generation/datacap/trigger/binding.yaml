@@ -1,0 +1,13 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerBinding
+metadata:
+  name: datacap-create-binding
+  namespace: tekton
+spec:
+  params:
+    - name: cloud
+      value: $(body.cloud)
+    - name: region
+      value: $(body.region)
+    - name: version
+      value: $(body.version)

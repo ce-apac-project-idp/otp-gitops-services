@@ -1,0 +1,32 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: generate-datacap
+  namespace: tekton
+spec:
+  workspaces:
+    - description: Output workspace.
+      name: output
+  params:
+    - name: cloud
+      type: string
+      description: Hyperscaler
+      default: "false"
+    - name: region
+      type: string
+      description: Location
+    - name: version
+      type: string
+      description: Version
+  steps:
+    - name: datacap-generation
+      image: quay.io/marwan_attar_ibm/datacap_generation
+      env:
+      - name: WORKSPACE
+        value: "$(workspaces.output.path)"
+      script:  |
+
+        # Very bare bones..
+        oc create -f /tmp/ami.yaml
+
+     

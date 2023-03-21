@@ -1,0 +1,43 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerTemplate
+metadata:
+  name: datacap-create-tt
+  namespace: tekton
+spec:
+  params:
+    - name: cloud
+    - name: region
+    - name: version
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: datacap-create-pipeline-run-
+        annotations:
+          argocd.argoproj.io/compare-options: IgnoreExtraneous
+      spec:
+        params:
+          - name: cloud
+            value: $(tt.params.cloud)
+          - name: region
+            value: $(tt.params.region)
+          - name: version
+            value: $(tt.params.version)
+        pipelineRef:
+          name: datacap-resource-submission
+        serviceAccountName: pipeline
+        timeout: 1h0m0s
+        workspaces:
+          - name: shared-data
+            volumeClaimTemplate:
+              metadata:
+                creationTimestamp: null
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: 1Gi
+                storageClassName: ocs-storagecluster-cephfs
+                volumeMode: Filesystem
+              status: {}

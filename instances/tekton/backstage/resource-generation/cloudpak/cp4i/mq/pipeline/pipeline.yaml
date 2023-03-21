@@ -4,7 +4,7 @@ metadata:
   name: mq-resource-submission
   namespace: tekton
   labels:
-    build-name: resource-submission
+    build-name: mq-resource-submission
 spec:
   description: |
    This pipeline will be triggered in the event an MQ resource ought to be committed to a cluster.  
