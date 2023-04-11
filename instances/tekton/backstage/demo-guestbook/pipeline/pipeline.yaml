@@ -1,0 +1,39 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: guestbook-deploy
+  namespace: tekton
+  labels:
+    build-name: guestbook-deploy
+spec:
+  description: |
+   This pipeline will be triggered in the event the demo guestbook app is created.  
+  params:
+  - name: cluster-name
+    type: string
+    description: Name of cluster.
+  - name: version
+    type: string
+    description: Version of the guestbook application.
+  workspaces:
+  - name: shared-data
+    description: |
+      Shared, persisted data for the tasks constituting this pipeline.
+  - name: ssh-credentials
+    description: SSH credentials required to perform git commands against select repositories from the Gitops organisation.
+  - name: git-configmap
+    description: Registry related information housed within said configmap. 
+  tasks:
+  - name: catalog-generation
+    taskRef:
+      name: catalog-generation
+    workspaces:
+    - name: output
+      workspace: shared-data
+    - name: ssh-directory
+      workspace: ssh-credentials
+    - name: gitops
+      workspace: git-configmap
+    params:
+    - name: verbose
+      value: true

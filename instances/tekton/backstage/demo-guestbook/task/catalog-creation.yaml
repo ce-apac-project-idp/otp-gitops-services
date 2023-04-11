@@ -1,0 +1,134 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: catalog-generation
+spec:
+  description: >-
+
+    Git command that needs to be run can be passed as a script to
+    the task. This task needs authentication to git in order to push
+    after the git operation.
+
+  workspaces:
+    - name: output 
+      description: Source (working) directory 
+
+    - name: gitops
+      description: Configmap containing GitOps information housed here.
+
+    - name: input
+      optional: true
+      description: |
+        An optional workspace that contains the files that need to be added to git. You can
+        access the workspace from your script using `$(workspaces.input.path)`, for instance:
+
+          cp $(workspaces.input.path)/file_that_i_want .
+          git add file_that_i_want
+          # etc
+
+    - name: ssh-directory
+      optional: true
+      description: |
+        A .ssh directory with private key, known_hosts, config, etc. Copied to
+        the user's home before git commands are executed. Used to authenticate
+        with the git remote when performing the clone. Binding a Secret to this
+        Workspace is strongly recommended over other volume types.
+
+    - name: basic-auth
+      optional: true
+      description: |
+        A Workspace containing a .gitconfig and .git-credentials file. These
+        will be copied to the user's home before any git commands are run. Any
+        other files in this Workspace are ignored. It is strongly recommended
+        to use ssh-directory over basic-auth whenever possible and to bind a
+        Secret to this Workspace over other volume types.
+  params:
+    - name: userHome 
+      description: |
+        Absolute path to the user's home directory. Set this explicitly if you are running the image as a non-root user or have overridden
+        the gitInitImage param with an image containing custom user configuration.
+      type: string
+      default: "/home/builder"
+
+    - name: verbose 
+      description: Log the commands that are executed during `git-clone`'s operation.
+      type: string
+      default: "true"
+
+  results:
+    - name: commit
+      description: The precise commit SHA after the git operation.
+
+  steps:
+    - name: add-catalogs
+      image: quay.io/marwan_attar_ibm/catalog-guestbook-generation:v3
+      workingDir: $(workspaces.output.path)
+      env:
+      - name: HOME
+        value: $(params.userHome)
+      - name: VERBOSE
+        value: $(params.verbose)
+      - name: WORKSPACE_OUTPUT_PATH
+        value: $(workspaces.output.path)
+      - name: WORKSPACE_SSH_DIRECTORY_BOUND
+        value: $(workspaces.ssh-directory.bound)
+      - name: WORKSPACE_SSH_DIRECTORY_PATH
+        value: $(workspaces.ssh-directory.path)
+      - name: WORKSPACE_BASIC_AUTH_DIRECTORY_BOUND
+        value: $(workspaces.basic-auth.bound)
+      - name: WORKSPACE_BASIC_AUTH_DIRECTORY_PATH
+        value: $(workspaces.basic-auth.path)
+      - name: CATALOG_REPO_NAME
+        value: backstage-idp-catalog
+      script: |
+        #!/usr/bin/env bash
+        set -eu
+
+        if [ "${VERBOSE}" = "true" ] ; then
+          set -x
+        fi
+
+        if [ "${WORKSPACE_BASIC_AUTH_DIRECTORY_BOUND}" = "true" ] ; then
+          cp "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.git-credentials" "${HOME}/.git-credentials"
+          cp "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.gitconfig" "${HOME}/.gitconfig"
+          chmod 400 "${HOME}/.git-credentials"
+          chmod 400 "${PARAM_USER_HOME}/.gitconfig"
+        fi
+
+        if [ "${WORKSPACE_SSH_DIRECTORY_BOUND}" = "true" ] ; then
+          cp -R "${WORKSPACE_SSH_DIRECTORY_PATH}" "${HOME}"/.ssh
+          chmod 700 "${HOME}"/.ssh
+          chmod -R 400 "${HOME}"/.ssh/*
+        fi
+
+        # This should be removed at some point in favour of specifying the known_hosts in the ExternalSecrets as such: https://artifacthub.io/packages/tekton-task/tekton-catalog-tasks/git-cli#using-ssh-credentials
+        export GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" 
+        
+
+        username=`cat /workspace/gitops/username`
+        email=`cat /workspace/gitops/email`
+        git config --global user.email "$email"
+        git config --global user.name "$username"
+
+        repo=`cat /workspace/gitops/catalogRepo`
+        git clone $repo
+        mkdir -p $CATALOG_REPO_NAME/components 
+
+        cp /tmp/*.yaml $CATALOG_REPO_NAME/components
+        yq e -i '.spec.targets += [ "./components/redis-component.yaml" ]' $CATALOG_REPO_NAME/all-components.yaml
+        yq e -i '.spec.targets += [ "./components/app-component.yaml" ]' $CATALOG_REPO_NAME/all-components.yaml
+        # This step is important. Must be in the correct context (.git directory should be present at your current wrking directory or any higher level directories).
+        # There is no .git folder in this directory or any other directories above. Hence the git add command will fail if the cd below is not performed.
+        cd $CATALOG_REPO_NAME
+        git add .
+        git commit -m "Guest book components added"
+        git push 
+
+        RESULT_SHA="$(git rev-parse HEAD | tr -d '\n')"
+        EXIT_CODE="$?"
+        if [ "$EXIT_CODE" != 0 ]
+        then
+          exit $EXIT_CODE
+        fi
+        # Make sure we don't add a trailing newline to the result!
+        printf "%s" "$RESULT_SHA" > "$(results.commit.path)"
