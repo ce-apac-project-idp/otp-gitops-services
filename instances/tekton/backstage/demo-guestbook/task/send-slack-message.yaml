@@ -29,7 +29,7 @@ spec:
     image: docker.io/curlimages/curl:7.70.0@sha256:031df77a11e5edded840bc761a845eab6e3c2edee22669fb8ad6d59484b6a1c4 
     script: |
       #!/bin/sh
-      current_date_time=$(date)
+      sleep 60
       /usr/bin/curl -X POST -H 'Content-type: application/json; charset=utf-8' -H 'Authorization: Bearer '$TOKEN --data '{"channel":"D052R5VPELV", "text":"Guestbook deployment complete. Please visit your backstage <http://a13e7f01ae4cc49cd9cb449442249799-1008018409.ap-southeast-1.elb.amazonaws.com:7007|*deployment*> for more information"}' https://slack.com/api/chat.postMessage
     env:
     - name: TOKEN
