@@ -1,0 +1,14 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: EventListener
+metadata:
+  name: guestbook-deploy
+  namespace: tekton
+spec:
+  serviceAccountName: pipeline
+  triggers:
+    - bindings:
+        - kind: TriggerBinding
+          ref: guestbook-deploy-binding
+      template:
+        ref: guestbook-deploy-tt
+      name: guestbook-deploy

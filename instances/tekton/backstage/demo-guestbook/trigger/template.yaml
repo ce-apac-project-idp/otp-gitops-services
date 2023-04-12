@@ -1,0 +1,45 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerTemplate
+metadata:
+  name: guestbook-deploy-tt
+  namespace: tekton
+spec:
+  params:
+    - name: clusterName
+    - name: gitRepo
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: guestbook-deploy-pipeline-run-
+        annotations:
+          argocd.argoproj.io/compare-options: IgnoreExtraneous
+      spec:
+        params:
+          - name: clusterName
+            value: $(tt.params.clusterName)
+          - name: gitRepo
+            value: $(tt.params.gitRepo)
+        pipelineRef:
+          name: guestbook-deploy
+        serviceAccountName: pipeline
+        timeout: 1h0m0s
+        workspaces:
+          - name: shared-data
+            volumeClaimTemplate:
+              metadata:
+                creationTimestamp: null
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: 1Gi
+                storageClassName: ocs-storagecluster-cephfs
+                volumeMode: Filesystem
+          - name: ssh-credentials
+            secret:
+              secretName: git-cli-ssh-private-key
+          - configMap:
+              name: git-data
+            name: git-configmap

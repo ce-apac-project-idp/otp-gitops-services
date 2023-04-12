@@ -1,0 +1,11 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerBinding
+metadata:
+  name: guestbook-deploy-binding
+  namespace: tekton
+spec:
+  params:
+    - name: clusterName
+      value: $(body.clusterName)
+    - name: gitRepo
+      value: $(body.gitRepo)

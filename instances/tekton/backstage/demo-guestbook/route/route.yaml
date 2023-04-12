@@ -1,0 +1,16 @@
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: guestbook-deploy
+  namespace: tekton
+  labels:
+    app.kubernetes.io/managed-by: EventListener
+    app.kubernetes.io/part-of: Triggers
+    eventlistener: guestbook-deploy
+spec:
+  to:
+    kind: Service
+    name: el-guestbook-deploy
+  tls: null
+  port:
+    targetPort: http-listener
