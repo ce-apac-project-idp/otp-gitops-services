@@ -23,3 +23,9 @@ spec:
             requests:
               storage: 1Gi
           storageClassName: ocs-storagecluster-cephfs
+    - name: ssh-credentials
+      secret:
+        secretName: git-cli-ssh-private-key
+    - configMap:
+        name: git-data
+      name: git-configmap
