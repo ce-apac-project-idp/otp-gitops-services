@@ -9,7 +9,7 @@ spec:
       name: output
   steps:
     - name: guestbook-deployment
-      image: quay.io/marwan_attar_ibm/guestbook-generation:v1
+      image: quay.io/marwan_attar_ibm/guestbook-generation:v2
       script:  |
 
         # This is minimal. Obviously a push based approach like this should NOT be used in a production setting.
