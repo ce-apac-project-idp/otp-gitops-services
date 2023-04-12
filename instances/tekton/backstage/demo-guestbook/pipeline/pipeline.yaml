@@ -9,12 +9,12 @@ spec:
   description: |
    This pipeline will be triggered in the event the demo guestbook app is created.  
   params:
-  - name: cluster-name
+  - name: clusterName
     type: string
     description: Name of cluster.
-  - name: version
+  - name: gitRepo
     type: string
-    description: Version of the guestbook application.
+    description: Location of the Git Repository
   workspaces:
   - name: shared-data
     description: |

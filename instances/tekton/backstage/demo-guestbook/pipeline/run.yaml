@@ -6,9 +6,9 @@ spec:
   pipelineRef:
     name: guestbook-deploy
   params:
-    - name: cluster-name
+    - name: clusterName
       value: local-cluster
-    - name: version
+    - name: gitRepo
       value: v1
   serviceAccountName: pipeline
   workspaces:
