@@ -37,3 +37,10 @@ spec:
     params:
     - name: verbose
       value: true
+  - name: generate-guestbook-app
+    runAfter: ["catalog-generation"]
+    taskRef:
+      name: generate-guestbook-app
+    workspaces:
+    - name: output
+      workspace: shared-data

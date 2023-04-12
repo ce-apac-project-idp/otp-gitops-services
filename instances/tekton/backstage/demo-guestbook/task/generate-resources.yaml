@@ -1,0 +1,19 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: generate-guestbook-app
+  namespace: tekton
+spec:
+  workspaces:
+    - description: Output workspace.
+      name: output
+  steps:
+    - name: guestbook-deployment
+      image: quay.io/marwan_attar_ibm/guestbook-generation
+      script:  |
+
+        # This is minimal. Obviously a push based approach like this should NOT be used in a production setting.
+        # Other considerations should be taken into account. We should deal the whole pipeline
+        # as a transaction and so "rolling back" logic should be implemented this task failed
+        # and upstream tasks were successful.
+        oc create -f /tmp/components
