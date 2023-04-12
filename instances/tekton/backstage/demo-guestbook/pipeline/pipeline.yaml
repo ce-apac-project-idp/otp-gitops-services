@@ -44,3 +44,15 @@ spec:
     workspaces:
     - name: output
       workspace: shared-data
+  - name: slackops
+    runAfter: ["generate-guestbook-app"]
+    taskRef:
+      name: send-to-channel-slack
+    params:
+    - name: token-secret
+      value: token-secret
+    - name: channel
+      value: D052R5VPELV
+    workspaces:
+    - name: output
+      workspace: shared-data
